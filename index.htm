@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="title" content="Das lustige Spießroulette">
+<meta name="image" content="/LogoPlain.jpg"> 
+<link rel="icon" type="image/svg" href="/LogoPlainSVG.svg">
+<title>Rheinfallspinsel</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+        position: relative;
+        overflow: hidden;
+        background: radial-gradient(circle, rgba(255,255,255,0) 60%, rgba(0,123,255,0.1) 100%);
+    }
+    #backgroundWords, #bubbles {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        z-index: 0;
+    }
+    .flyingWord, .bubble {
+        position: absolute;
+        animation: float linear infinite;
+        font-size: 18px;
+        opacity: 0.7;
+    }
+    .bubble {
+        border-radius: 50%;
+        background-color: rgba(255,0,0,0.7);
+        animation-duration: 10s;
+    }
+    @keyframes float {
+        0% { transform: translate(var(--start-x), var(--start-y)); }
+        100% { transform: translate(var(--end-x), var(--end-y)); }
+    }
+    .spinner {
+        width: 300px;
+        height: 50px;
+        border-radius: 25px;
+        box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        cursor: pointer;
+        color: white;
+        z-index: 100;
+        position: relative;
+        margin-bottom: 20px;
+    }
+    #nameSpinner {
+        background: linear-gradient(to right, #007bff, #0056b3);
+    }
+    #numberSpinner {
+        background: linear-gradient(to right, #ff0000, #b30000);
+    }
+    .spinner::before {
+        content: '';
+        position: absolute;
+        top: -5px; left: -5px; right: -5px; bottom: -5px;
+        z-index: -1;
+        background: linear-gradient(45deg, rgba(255,255,255,0.15), rgba(255,255,255,0));
+        border-radius: 30px;
+    }
+    .spinner::after {
+        content: '';
+        position: absolute;
+        width: 100%; height: 100%;
+        background: rgba(0,0,0,0.2);
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+    .spinner:hover::after {
+        opacity: 1;
+    }
+    .disabled {
+        pointer-events: none;
+        opacity: 0.5;
+    }
+    .winning-display {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: gold;
+        z-index: 200;
+        text-align: center;
+        font-size: 32px;
+        line-height: 10vh;
+        animation: spin 6s infinite;
+    }
+    #randomPhrase {
+    font-size: 20px;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        50% { transform: rotate(360deg); }
+        100% { transform: rotate(0deg); }
+    }
+</style>
+</head>
+<body>
+<div id="backgroundWords"></div>
+<div id="bubbles"></div>
+<div class="spinner" id="numberSpinner">Nummer</div>
+<div class="spinner" id="nameSpinner">Name</div>
+<div class="winning-display" id="winDisplay"><div><p> </p></div><span id="winName"></span>, <span id="winNumber"></span> Striche<div id="randomPhrase"></div></div>
+<script>
+    const names = [
+        "Ferdinand I (Reytschack)", "Jonas von der Feuerwehr", "S.M. Johannes B. Beeten", "Enno aus Köln", "Rolls Royce Robert",
+        "Ferdinand II (Henze)", "Fréddé", "Jakob II (Alberts)", "Frisch", "Ole", "Kalle", "Maxi",
+        "Max I (Zimmer)", "Leonard Wehrmeister", "Michi, auch von der Feuerwehr", "Fabi der Schnelle"
+    ];
+    const additionalWords = ["Rheinfallspinsel", "Neuss", "Bier", "Quirinus-Gymnasium", "Schützenlust", "Weizen", "Fässchen", "Zigarre", "Für Deutschland", "Der Spieß ist ein ******", "Finger im Po, Mexiko", "Pils", "Altbier", "Kölsch", "Skifahren", "Pistenbulli", "Bobrennen", "Layla", "Jutta", "Olivia", "Laura", "Annalena", "Belinda", "Bagger"];
+    const phrases = [
+        "Wow, du bist so unglaublich talentiert.",
+        "Herzlichen Glückwunsch! Deine Fähigkeit, alle anderen zu überraschen, ist wirklich beeindruckend.",
+        "Bravo! Deine Leistung ist wirklich außergewöhnlich.",
+        "Ein Meister ist geboren!",
+        "Du hast es geschafft, allen anderen zu beweisen, dass du immer im Mittelpunkt stehen kannst.",
+        "Großartig! Deine Fähigkeiten sind bewundernswert.",
+        "Hervorragend! Du bist wie ein lebendiger Beweis dafür, dass nicht alles auf der Welt schlecht ist.",
+        "Warum so wenig?",
+        "Nochmal!!!",
+        "Mehr, mehr, mehr …",
+        "Herrlich!",
+        "Gratulation! Du bist der wahre Held der unerwarteten Wendungen.",
+        "Ein weiterer Höhepunkt in deiner Karriere bei den Rheinfallspinseln.",
+        "Fantastisch!",
+        "Wie hast du das nur geschafft?",
+        "Du machst uns alle stolz.",
+        "Ein wahrer Glückspilz.",
+        "Hochmut kommt vor dem Fall.",
+        "Das ist fair.",
+        "Super! Deine Eltern wären stolz auf dich.",
+        "Kaum zu glauben."
+    ];
+    const backgroundWords = document.getElementById('backgroundWords');
+    const bubbles = document.getElementById('bubbles');
+    const maxItems = 200;
+    let currentItems = 0;
+    let nameSelected = false;
+    let numberSelected = false;
+    let lastSelectedName = '';
+    let lastSelectedNumber = '';
+
+    function addBackgroundWord(word) {
+        if (currentItems >= maxItems) return;
+        const wordDiv = document.createElement('div');
+        wordDiv.className = 'flyingWord';
+        wordDiv.textContent = word;
+        setupAnimation(wordDiv);
+        backgroundWords.appendChild(wordDiv);
+        currentItems++;
+    }
+
+    function addBubble() {
+        if (currentItems >= maxItems) return;
+        const bubble = document.createElement('div');
+        bubble.className = 'bubble';
+        const size = Math.random() * 20 + 10;
+        bubble.style.width = `${size}px`;
+        bubble.style.height = `${size}px`;
+        bubble.style.backgroundColor = `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255}, 0.7)`;
+        setupAnimation(bubble);
+        bubbles.appendChild(bubble);
+        currentItems++;
+    }
+
+    function setupAnimation(element) {
+        const duration = Math.random() * 5 + 5;
+        const startX = Math.random() * window.innerWidth;
+        const startY = Math.random() * window.innerHeight;
+        const endX = Math.random() * window.innerWidth;
+        const endY = Math.random() * window.innerHeight;
+        element.style.setProperty('--start-x', `${startX}px`);
+        element.style.setProperty('--start-y', `${startY}px`);
+        element.style.setProperty('--end-x', `${endX}px`);
+        element.style.setProperty('--end-y', `${endY}px`);
+        element.style.animationDuration = `${duration}s`;
+    }
+
+    setInterval(() => {
+        if (currentItems < maxItems) addBubble();
+    }, 500);
+
+    names.concat(additionalWords).forEach(word => {
+        if (currentItems < maxItems) {
+            addBackgroundWord(word);
+            addBackgroundWord(word);
+        }
+    });
+
+    const spinners = document.querySelectorAll('.spinner');
+    spinners.forEach(spinner => {
+        spinner.addEventListener('click', () => {
+            toggleSpinner(spinner);
+        });
+    });
+
+    function toggleSpinner(spinner) {
+        const isNameSpinner = spinner.id === 'nameSpinner';
+        const options = isNameSpinner ? names : Array.from({length: 10}, (_, i) => i + 1);
+        spinner.classList.add('disabled');
+        let interval = setInterval(() => {
+            const currentIndex = Math.floor(Math.random() * options.length);
+            spinner.textContent = options[currentIndex];
+            if (isNameSpinner) {
+                lastSelectedName = options[currentIndex];
+            } else {
+                lastSelectedNumber = options[currentIndex];
+            }
+        }, 100);
+
+        setTimeout(() => {
+            clearInterval(interval);
+            spinner.classList.remove('disabled');
+            if (isNameSpinner) {
+                nameSelected = true;
+            } else {
+                numberSelected = true;
+            }
+            if (nameSelected && numberSelected) {
+                showWinningDisplay();
+            }
+        }, Math.random() * 12000 + 3000);
+    }
+
+    function showWinningDisplay() {
+        const winDisplay = document.getElementById('winDisplay');
+        const winName = document.getElementById('winName');
+        const winNumber = document.getElementById('winNumber');
+        const randomPhrase = document.getElementById('randomPhrase');
+        
+        winName.textContent = lastSelectedName;
+        winNumber.textContent = lastSelectedNumber;
+        randomPhrase.textContent = phrases[Math.floor(Math.random() * phrases.length)];
+
+        winDisplay.style.display = 'block';
+        setTimeout(() => {
+            winDisplay.style.display = 'none';
+            nameSelected = false;
+            numberSelected = false;
+            lastSelectedName = '';
+            lastSelectedNumber = '';
+            document.getElementById('numberSpinner').textContent = 'Nummer';
+            document.getElementById('nameSpinner').textContent = 'Name';
+        }, 12000);
+    }
+</script>
+</body>
+</html>
