@@ -125,10 +125,10 @@
 
         /* Title */
         .title {
-            font-size: clamp(2rem, 5vw, 4rem);
+            font-size: clamp(1.8rem, 5vw, 3.5rem);
             font-weight: 900;
             text-align: center;
-            margin-bottom: 3rem;
+            margin-bottom: 2rem;
             background: var(--primary-gradient);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -166,18 +166,18 @@
         /* Wheel Container */
         .wheels-container {
             display: flex;
-            gap: 4rem;
+            gap: 3rem;
             align-items: center;
             justify-content: center;
             flex-wrap: wrap;
-            margin-bottom: 3rem;
+            margin-bottom: 2rem;
         }
 
         /* Individual Wheel */
         .wheel-wrapper {
             position: relative;
-            width: 280px;
-            height: 280px;
+            width: 240px;
+            height: 240px;
             perspective: 1000px;
         }
 
@@ -254,6 +254,8 @@
             text-align: center;
             text-transform: uppercase;
             letter-spacing: 2px;
+            padding: 10px;
+            width: 90%;
         }
 
         .wheel-label {
@@ -263,8 +265,11 @@
         }
 
         .wheel-value {
-            font-size: 2rem;
+            font-size: 1.8rem;
             text-shadow: 0 0 20px currentColor;
+            word-break: break-word;
+            line-height: 1.2;
+            max-width: 100%;
         }
 
         #numberWheel .wheel-face {
@@ -293,12 +298,12 @@
         .control-panel {
             display: flex;
             gap: 2rem;
-            margin-bottom: 2rem;
+            margin-bottom: 1rem;
         }
 
         .spin-button {
-            padding: 1rem 3rem;
-            font-size: 1.2rem;
+            padding: 0.8rem 2.5rem;
+            font-size: 1.1rem;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 2px;
@@ -359,6 +364,7 @@
             align-items: center;
             justify-content: center;
             backdrop-filter: blur(10px);
+            padding: 20px;
         }
 
         .result-overlay.active {
@@ -374,6 +380,7 @@
         .result-content {
             text-align: center;
             animation: resultBounce 0.6s ease;
+            max-width: 90vw;
         }
 
         @keyframes resultBounce {
@@ -383,13 +390,13 @@
         }
 
         .result-title {
-            font-size: clamp(3rem, 8vw, 6rem);
+            font-size: clamp(2.5rem, 7vw, 5rem);
             font-weight: 900;
             background: var(--gold-gradient);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
             animation: resultGlow 1s ease infinite alternate;
         }
 
@@ -399,19 +406,36 @@
         }
 
         .result-details {
-            font-size: clamp(1.5rem, 4vw, 2.5rem);
+            font-size: clamp(1.2rem, 3.5vw, 2rem);
             margin-bottom: 1rem;
             color: white;
             text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+            line-height: 1.4;
+            word-wrap: break-word;
+            padding: 0 20px;
+        }
+
+        .result-name {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: clamp(1.4rem, 4vw, 2.3rem);
+            color: var(--neon-cyan);
+        }
+
+        .result-strokes {
+            display: block;
+            font-size: clamp(1.1rem, 3vw, 1.8rem);
+            color: var(--neon-magenta);
         }
 
         .result-phrase {
-            font-size: clamp(1rem, 2.5vw, 1.5rem);
+            font-size: clamp(0.9rem, 2.2vw, 1.3rem);
             font-style: italic;
             opacity: 0.8;
             max-width: 600px;
             margin: 0 auto;
             line-height: 1.6;
+            padding: 0 20px;
         }
 
         /* Confetti */
@@ -510,23 +534,87 @@
 
         /* Mobile Optimizations */
         @media (max-width: 768px) {
+            .main-container {
+                padding: 15px;
+                justify-content: flex-start;
+                padding-top: 60px;
+            }
+
+            .title {
+                margin-bottom: 1.5rem;
+            }
+
             .wheels-container {
-                gap: 2rem;
+                gap: 1.5rem;
             }
 
             .wheel-wrapper {
-                width: 200px;
-                height: 200px;
+                width: 160px;
+                height: 160px;
+            }
+
+            .wheel-value {
+                font-size: 1.3rem;
+            }
+
+            .wheel-label {
+                font-size: 0.7rem;
             }
 
             .control-panel {
                 flex-direction: column;
                 width: 100%;
-                max-width: 300px;
+                max-width: 250px;
             }
 
             .spin-button {
                 width: 100%;
+                padding: 0.8rem 2rem;
+                font-size: 1rem;
+            }
+
+            .audio-controls {
+                top: 10px;
+                right: 10px;
+                padding: 0.4rem 0.8rem;
+            }
+
+            .stats-container {
+                bottom: 10px;
+                right: 10px;
+                padding: 0.8rem;
+                font-size: 0.8rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .wheel-wrapper {
+                width: 140px;
+                height: 140px;
+            }
+
+            .wheel-value {
+                font-size: 1.1rem;
+            }
+        }
+
+        @media (max-height: 700px) and (max-width: 768px) {
+            .main-container {
+                padding-top: 40px;
+            }
+
+            .title {
+                font-size: 1.5rem;
+                margin-bottom: 1rem;
+            }
+
+            .wheel-wrapper {
+                width: 140px;
+                height: 140px;
+            }
+
+            .sound-waves {
+                height: 60px;
             }
         }
 
@@ -537,31 +625,6 @@
                 animation-iteration-count: 1 !important;
                 transition-duration: 0.001ms !important;
             }
-        }
-
-        /* Loading Animation */
-        .loader {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 100px;
-            height: 100px;
-            z-index: 2000;
-        }
-
-        .loader-circle {
-            width: 100%;
-            height: 100%;
-            border: 4px solid transparent;
-            border-top-color: var(--neon-cyan);
-            border-radius: 50%;
-            animation: loaderSpin 1s linear infinite;
-        }
-
-        @keyframes loaderSpin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
         }
 
         /* Pulse Effect */
@@ -611,7 +674,7 @@
             bottom: 0;
             left: 0;
             width: 100%;
-            height: 100px;
+            height: 80px;
             display: flex;
             align-items: flex-end;
             justify-content: center;
@@ -629,23 +692,23 @@
 
         @keyframes wave {
             0%, 100% { height: 20px; }
-            50% { height: 60px; }
+            50% { height: 50px; }
         }
     </style>
 </head>
 <body>
     <!-- Audio Elements -->
     <audio id="backgroundAudio" loop>
-        <source src="background.wav" type="audio/wav">
+        <source src="background.mp3" type="audio/mpeg">
     </audio>
     <audio id="spinAudio">
-        <source src="spin.wav" type="audio/wav">
+        <source src="spin.mp3" type="audio/mpeg">
     </audio>
     <audio id="tensionAudio" loop>
-        <source src="tension.wav" type="audio/wav">
+        <source src="tension.mp3" type="audio/mpeg">
     </audio>
     <audio id="applaudAudio">
-        <source src="applaud.wav" type="audio/wav">
+        <source src="applaud.mp3" type="audio/mpeg">
     </audio>
 
     <!-- Audio Controls -->
@@ -707,7 +770,8 @@
         <div class="result-content">
             <h2 class="result-title">GEWINNER!</h2>
             <div class="result-details">
-                <span id="resultName"></span> - <span id="resultNumber"></span> Striche
+                <span class="result-name" id="resultName"></span>
+                <span class="result-strokes"><span id="resultNumber"></span> Striche</span>
             </div>
             <div class="result-phrase" id="resultPhrase"></div>
         </div>
@@ -832,7 +896,8 @@
         // Initialize Background Effects
         function initializeEffects() {
             // Create particles
-            for (let i = 0; i < 50; i++) {
+            const particleCount = window.matchMedia('(max-width: 768px)').matches ? 25 : 50;
+            for (let i = 0; i < particleCount; i++) {
                 createParticle();
             }
 
@@ -846,7 +911,7 @@
                 const bar = document.createElement('div');
                 bar.className = 'wave-bar';
                 bar.style.animationDelay = `${i * 0.05}s`;
-                bar.style.height = `${Math.random() * 40 + 20}px`;
+                bar.style.height = `${Math.random() * 30 + 20}px`;
                 soundWaves.appendChild(bar);
             }
         }
@@ -897,6 +962,15 @@
             setTimeout(() => pulse.remove(), 2000);
         }
 
+        // Helper function to get short name for spinning display
+        function getShortName(fullName) {
+            const parts = fullName.split(' ');
+            if (parts.length > 1 && parts[0].length > 8) {
+                return parts[0].substring(0, 8) + '...';
+            }
+            return parts[0];
+        }
+
         // Spinning Logic
         function spinBothWheels() {
             if (isSpinning) return;
@@ -927,7 +1001,7 @@
             // Animate values during spin
             const valueInterval = setInterval(() => {
                 numberValue.textContent = Math.floor(Math.random() * 10) + 1;
-                nameValue.textContent = names[Math.floor(Math.random() * names.length)].split(' ')[0];
+                nameValue.textContent = getShortName(names[Math.floor(Math.random() * names.length)]);
             }, 100);
 
             // Stop spinning
@@ -939,7 +1013,7 @@
                 selectedName = names[Math.floor(Math.random() * names.length)];
                 
                 numberValue.textContent = selectedNumber;
-                nameValue.textContent = selectedName.split(' ')[0];
+                nameValue.textContent = getShortName(selectedName);
                 
                 // Remove spinning class
                 numberWheel.classList.remove('spinning');
@@ -1047,13 +1121,6 @@
                 }
             }, { once: true });
         });
-
-        // Performance optimization - reduce particles on mobile
-        if (window.matchMedia('(max-width: 768px)').matches) {
-            document.querySelectorAll('.particle').forEach((particle, index) => {
-                if (index > 20) particle.remove();
-            });
-        }
 
         // Add keyboard support
         document.addEventListener('keydown', (e) => {
