@@ -468,38 +468,11 @@
             }
         }
 
-        /* Floating Elements */
-        .floating-elements {
-            position: fixed;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 5;
-        }
-
-        .floating-word {
-            position: absolute;
-            font-size: 1rem;
-            opacity: 0.1;
-            color: var(--neon-cyan);
-            animation: floatWord 20s infinite;
-            text-shadow: 0 0 10px currentColor;
-        }
-
-        @keyframes floatWord {
-            0% {
-                transform: translate(0, 100vh) rotate(0deg);
-            }
-            100% {
-                transform: translate(100vw, -100vh) rotate(360deg);
-            }
-        }
-
         /* Audio Controls */
         .audio-controls {
             position: fixed;
-            top: 20px;
-            right: 20px;
+            bottom: 20px;
+            left: 20px;
             z-index: 100;
             background: var(--glass-bg);
             backdrop-filter: blur(10px);
@@ -574,8 +547,8 @@
             }
 
             .audio-controls {
-                top: 10px;
-                right: 10px;
+                bottom: 10px;
+                left: 10px;
                 padding: 0.4rem 0.8rem;
             }
 
@@ -712,7 +685,7 @@
     </audio>
 
     <!-- Audio Controls -->
-    <div class="audio-controls" id="audioControls">
+    <div class="audio-controls muted" id="audioControls">
         <div class="audio-icon"></div>
         <span>Sound</span>
     </div>
@@ -723,9 +696,6 @@
         <div class="neon-grid"></div>
         <div class="particles" id="particles"></div>
     </div>
-
-    <!-- Floating Elements -->
-    <div class="floating-elements" id="floatingElements"></div>
 
     <!-- Sound Waves -->
     <div class="sound-waves" id="soundWaves"></div>
@@ -818,13 +788,6 @@
             "Kaum zu glauben."
         ];
 
-        const floatingWords = [
-            "Rheinfallspinsel", "Neuss", "Bier", "Quirinus-Gymnasium", "Schützenlust", 
-            "Weizen", "Fässchen", "Zigarre", "Für Deutschland", "Der Spieß ist ein ******", 
-            "Finger im Po, Mexiko", "Pils", "Altbier", "Kölsch", "Skifahren", "Pistenbulli", 
-            "Bobrennen", "Layla", "Jutta", "Olivia", "Laura", "Annalena", "Belinda", "Bagger"
-        ];
-
         // DOM Elements
         const numberWheel = document.getElementById('numberWheel');
         const nameWheel = document.getElementById('nameWheel');
@@ -838,7 +801,6 @@
         const confettiContainer = document.getElementById('confettiContainer');
         const spinCount = document.getElementById('spinCount');
         const particles = document.getElementById('particles');
-        const floatingElements = document.getElementById('floatingElements');
         const soundWaves = document.getElementById('soundWaves');
         const audioControls = document.getElementById('audioControls');
 
@@ -853,7 +815,7 @@
         let totalSpins = 0;
         let selectedName = '';
         let selectedNumber = 0;
-        let isMuted = false;
+        let isMuted = true; // Start muted
         let applaudDuration = 0;
 
         // Initialize Audio
@@ -863,11 +825,6 @@
             spinAudio.volume = 0.5;
             tensionAudio.volume = 0.4;
             applaudAudio.volume = 0.6;
-
-            // Start background music
-            backgroundAudio.play().catch(e => {
-                console.log('Autoplay prevented, user interaction required');
-            });
 
             // Get applaud duration when metadata is loaded
             applaudAudio.addEventListener('loadedmetadata', () => {
@@ -901,11 +858,6 @@
                 createParticle();
             }
 
-            // Create floating words
-            floatingWords.forEach((word, index) => {
-                setTimeout(() => createFloatingWord(word), index * 200);
-            });
-
             // Create sound wave bars
             for (let i = 0; i < 30; i++) {
                 const bar = document.createElement('div');
@@ -928,16 +880,6 @@
             particle.style.boxShadow = `0 0 10px ${particle.style.background}`;
             
             particles.appendChild(particle);
-        }
-
-        function createFloatingWord(word) {
-            const element = document.createElement('div');
-            element.className = 'floating-word';
-            element.textContent = word;
-            element.style.left = `${Math.random() * 100}%`;
-            element.style.animationDuration = `${Math.random() * 20 + 20}s`;
-            element.style.animationDelay = `${Math.random() * 10}s`;
-            floatingElements.appendChild(element);
         }
 
         // Wheel Interactions
@@ -964,11 +906,16 @@
 
         // Helper function to get short name for spinning display
         function getShortName(fullName) {
-            const parts = fullName.split(' ');
-            if (parts.length > 1 && parts[0].length > 8) {
-                return parts[0].substring(0, 8) + '...';
+            // Find the first non-letter character (excluding spaces between words)
+            const match = fullName.match(/^[A-Za-zÀ-ÿĀ-žА-я\s]+/);
+            if (match) {
+                const firstPart = match[0].trim();
+                if (firstPart.length > 12) {
+                    return firstPart.substring(0, 10) + '...';
+                }
+                return firstPart;
             }
-            return parts[0];
+            return fullName.substring(0, 10) + '...';
         }
 
         // Spinning Logic
@@ -995,8 +942,8 @@
             numberWheel.classList.add('spinning');
             nameWheel.classList.add('spinning');
 
-            // Random spinning duration between 5-15 seconds
-            const spinDuration = Math.random() * 10000 + 5000;
+            // Random spinning duration between 5-20 seconds
+            const spinDuration = Math.random() * 15000 + 5000;
 
             // Animate values during spin
             const valueInterval = setInterval(() => {
@@ -1113,13 +1060,6 @@
                 resultOverlay.classList.remove('active');
                 clearConfetti();
             });
-
-            // Try to start background music on first user interaction
-            document.addEventListener('click', () => {
-                if (!isMuted && backgroundAudio.paused && !isSpinning) {
-                    backgroundAudio.play();
-                }
-            }, { once: true });
         });
 
         // Add keyboard support
