@@ -608,6 +608,13 @@
                 right: 10px;
                 font-size: 0.7rem;
             }
+
+            .stats-container {
+                bottom: 60px;
+                right: 10px;
+                padding: 0.8rem;
+                font-size: 0.8rem;
+            }
         }
 
         @media (max-width: 480px) {
@@ -720,6 +727,20 @@
     </style>
 </head>
 <body>
+    <!-- Audio Elements - Simple HTML5 Audio -->
+    <audio id="backgroundAudio" loop preload="auto">
+        <source src="audios/background.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="spinAudio" preload="auto">
+        <source src="audios/spin.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="tensionAudio" loop preload="auto">
+        <source src="audios/tension.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="applaudAudio" preload="auto">
+        <source src="audios/applaud.mp3" type="audio/mpeg">
+    </audio>
+
     <!-- Audio Status -->
     <div class="audio-status" id="audioStatus">Audio wird geladen...</div>
 
@@ -746,7 +767,7 @@
         <div class="wheels-container">
             <!-- Number Wheel -->
             <div class="wheel-wrapper">
-                <div class="wheel" id="numberWheel" tabindex="0" role="button" aria-label="Zahlenrad">
+                <div class="wheel" id="numberWheel">
                     <div class="wheel-face">
                         <div class="wheel-content">
                             <div class="wheel-label">Anzahl</div>
@@ -758,7 +779,7 @@
 
             <!-- Name Wheel -->
             <div class="wheel-wrapper">
-                <div class="wheel" id="nameWheel" tabindex="0" role="button" aria-label="Namensrad">
+                <div class="wheel" id="nameWheel">
                     <div class="wheel-face">
                         <div class="wheel-content">
                             <div class="wheel-label">Name</div>
@@ -823,7 +844,6 @@
             "Heinrich"
         ];
 
-        // Short versions for display during spinning
         const shortNames = [
             "Oberleutnant",
             "Leutnant",
@@ -847,7 +867,6 @@
         ];
 
         const phrases = [
-            // Original 71 Sprüche
             "Wow, du bist so unglaublich talentiert.",
             "Herzlichen Glückwunsch! Deine Fähigkeit, alle anderen zu überraschen, ist wirklich beeindruckend.",
             "Bravo! Deine Leistung ist wirklich außergewöhnlich.",
@@ -950,189 +969,22 @@
             "Du bist der Champion der Herzen! Und der Zufallszahlen."
         ];
 
-        // Audio Manager Class
-        class AudioManager {
-            constructor() {
-                this.audioContext = null;
-                this.isUnlocked = false;
-                this.buffers = {};
-                this.sources = {};
-                this.isMuted = true;
-                this.volumes = {
-                    background: 0.3,
-                    spin: 0.5,
-                    tension: 0.4,
-                    applaud: 0.6
-                };
-                this.audioStatus = document.getElementById('audioStatus');
-                this.init();
-            }
-
-            async init() {
-                try {
-                    const AudioContext = window.AudioContext || window.webkitAudioContext;
-                    this.audioContext = new AudioContext();
-                    
-                    // Show status
-                    this.showStatus('Klicken Sie irgendwo, um Audio zu aktivieren');
-                    
-                    // Add unlock listener
-                    const unlockHandler = async () => {
-                        document.removeEventListener('click', unlockHandler);
-                        document.removeEventListener('touchstart', unlockHandler);
-                        document.removeEventListener('keydown', unlockHandler);
-                        await this.unlock();
-                    };
-                    
-                    document.addEventListener('click', unlockHandler, { once: true });
-                    document.addEventListener('touchstart', unlockHandler, { once: true });
-                    document.addEventListener('keydown', unlockHandler, { once: true });
-                } catch (error) {
-                    console.error('AudioContext initialization failed:', error);
-                    this.showStatus('Audio nicht verfügbar', 3000);
-                }
-            }
-
-            async unlock() {
-                if (this.isUnlocked) return;
-
-                try {
-                    await this.audioContext.resume();
-                    
-                    // Create silent buffer to fully unlock
-                    const buffer = this.audioContext.createBuffer(1, 1, 22050);
-                    const source = this.audioContext.createBufferSource();
-                    source.buffer = buffer;
-                    source.connect(this.audioContext.destination);
-                    source.start(0);
-
-                    this.isUnlocked = true;
-                    this.showStatus('Audio wird geladen...', 2000);
-                    
-                    // Load all sounds
-                    await this.loadAllSounds();
-                    this.showStatus('Audio bereit', 1000);
-                    
-                    // Start background music if not muted
-                    if (!this.isMuted) {
-                        this.playBackground();
-                    }
-                } catch (error) {
-                    console.error('Audio unlock failed:', error);
-                    this.showStatus('Audio-Fehler', 3000);
-                }
-            }
-
-            async loadAllSounds() {
-                const soundFiles = {
-                    background: 'audios/background.mp3',
-                    spin: 'audios/spin.mp3',
-                    tension: 'audios/tension.mp3',
-                    applaud: 'audios/applaud.mp3'
-                };
-
-                const loadPromises = Object.entries(soundFiles).map(async ([name, url]) => {
-                    try {
-                        const response = await fetch(url);
-                        const arrayBuffer = await response.arrayBuffer();
-                        const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
-                        this.buffers[name] = audioBuffer;
-                    } catch (error) {
-                        console.error(`Failed to load ${name}:`, error);
-                    }
-                });
-
-                await Promise.all(loadPromises);
-            }
-
-            play(soundName, loop = false) {
-                if (!this.isUnlocked || !this.buffers[soundName] || this.isMuted) return null;
-
-                try {
-                    // Stop existing source if playing
-                    this.stop(soundName);
-
-                    const source = this.audioContext.createBufferSource();
-                    const gainNode = this.audioContext.createGain();
-                    
-                    source.buffer = this.buffers[soundName];
-                    source.loop = loop;
-                    gainNode.gain.value = this.volumes[soundName] || 1;
-                    
-                    source.connect(gainNode);
-                    gainNode.connect(this.audioContext.destination);
-                    
-                    source.start(0);
-                    this.sources[soundName] = { source, gainNode };
-                    
-                    return source;
-                } catch (error) {
-                    console.error(`Error playing ${soundName}:`, error);
-                    return null;
-                }
-            }
-
-            stop(soundName) {
-                if (this.sources[soundName]) {
-                    try {
-                        this.sources[soundName].source.stop();
-                    } catch (e) {}
-                    delete this.sources[soundName];
-                }
-            }
-
-            stopAll() {
-                Object.keys(this.sources).forEach(name => this.stop(name));
-            }
-
-            playBackground() {
-                return this.play('background', true);
-            }
-
-            playSpin() {
-                return this.play('spin', false);
-            }
-
-            playTension() {
-                return this.play('tension', true);
-            }
-
-            playApplaud() {
-                return this.play('applaud', false);
-            }
-
-            setMuted(muted) {
-                this.isMuted = muted;
-                if (muted) {
-                    this.stopAll();
-                } else if (this.isUnlocked && !window.gameState.isSpinning) {
-                    this.playBackground();
-                }
-            }
-
-            showStatus(message, duration = 0) {
-                this.audioStatus.textContent = message;
-                this.audioStatus.classList.add('visible');
-                
-                if (duration > 0) {
-                    setTimeout(() => {
-                        this.audioStatus.classList.remove('visible');
-                    }, duration);
-                }
-            }
-        }
-
-        // Global game state
-        window.gameState = {
-            isSpinning: false,
-            totalSpins: 0,
-            selectedName: '',
-            selectedNumber: 0,
-            selectedIndex: 0
+        // Audio Elements
+        const audioElements = {
+            background: document.getElementById('backgroundAudio'),
+            spin: document.getElementById('spinAudio'),
+            tension: document.getElementById('tensionAudio'),
+            applaud: document.getElementById('applaudAudio')
         };
 
-        // Initialize audio manager
-        let audioManager;
+        // Game State
+        let isSpinning = false;
+        let totalSpins = 0;
+        let selectedName = '';
+        let selectedNumber = 0;
+        let selectedIndex = 0;
+        let isMuted = true;
+        let audioUnlocked = false;
 
         // DOM Elements
         const numberWheel = document.getElementById('numberWheel');
@@ -1149,6 +1001,70 @@
         const particles = document.getElementById('particles');
         const soundWaves = document.getElementById('soundWaves');
         const audioControls = document.getElementById('audioControls');
+        const audioStatus = document.getElementById('audioStatus');
+
+        // Audio Functions
+        function unlockAllAudio() {
+            if (audioUnlocked) return;
+            
+            // Show status
+            audioStatus.textContent = 'Audio wird aktiviert...';
+            audioStatus.classList.add('visible');
+            
+            // Unlock all audio elements by playing them silently
+            Object.values(audioElements).forEach(audio => {
+                audio.volume = 0;
+                const promise = audio.play();
+                if (promise) {
+                    promise.then(() => {
+                        audio.pause();
+                        audio.currentTime = 0;
+                        audio.volume = 1;
+                    }).catch(() => {
+                        audio.pause();
+                        audio.currentTime = 0;
+                        audio.volume = 1;
+                    });
+                } else {
+                    audio.pause();
+                    audio.currentTime = 0;
+                    audio.volume = 1;
+                }
+            });
+            
+            audioUnlocked = true;
+            
+            // Update status
+            setTimeout(() => {
+                audioStatus.textContent = 'Audio bereit';
+                setTimeout(() => {
+                    audioStatus.classList.remove('visible');
+                }, 1000);
+            }, 500);
+        }
+
+        function playAudio(name, loop = false) {
+            if (!audioUnlocked || isMuted) return;
+            
+            const audio = audioElements[name];
+            if (!audio) return;
+            
+            audio.loop = loop;
+            audio.currentTime = 0;
+            audio.play().catch(() => {});
+        }
+
+        function stopAudio(name) {
+            const audio = audioElements[name];
+            if (audio) {
+                audio.pause();
+                audio.currentTime = 0;
+            }
+        }
+
+        function stopAllAudio() {
+            Object.keys(audioElements).forEach(name => stopAudio(name));
+        }
 
         // Initialize Background Effects
         function initializeEffects() {
@@ -1183,20 +1099,13 @@
         // Wheel Interactions
         function addWheelInteractions(wheel) {
             wheel.addEventListener('mouseenter', () => {
-                if (!window.gameState.isSpinning) {
+                if (!isSpinning) {
                     createPulseEffect(wheel);
                 }
             });
 
             wheel.addEventListener('click', () => {
-                if (!window.gameState.isSpinning) {
-                    spinBothWheels();
-                }
-            });
-
-            // Keyboard support for wheels
-            wheel.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' && !window.gameState.isSpinning) {
+                if (!isSpinning) {
                     spinBothWheels();
                 }
             });
@@ -1211,35 +1120,35 @@
 
         // Toggle Audio
         function toggleAudio() {
-            const isMuted = audioControls.classList.contains('muted');
-            audioControls.classList.toggle('muted');
+            isMuted = !isMuted;
+            audioControls.classList.toggle('muted', isMuted);
             
-            if (audioManager) {
-                audioManager.setMuted(!isMuted);
+            if (isMuted) {
+                stopAllAudio();
+            } else if (audioUnlocked && !isSpinning) {
+                playAudio('background', true);
             }
         }
 
         // Spinning Logic
         function spinBothWheels() {
-            if (window.gameState.isSpinning) return;
+            if (isSpinning) return;
 
-            window.gameState.isSpinning = true;
+            isSpinning = true;
             spinButton.disabled = true;
-            window.gameState.totalSpins++;
-            spinCount.textContent = window.gameState.totalSpins;
+            totalSpins++;
+            spinCount.textContent = totalSpins;
 
             // Audio handling
-            if (audioManager && audioManager.isUnlocked) {
-                audioManager.stop('background');
-                audioManager.playSpin();
-                
-                // Start tension after spin sound
-                setTimeout(() => {
-                    if (window.gameState.isSpinning) {
-                        audioManager.playTension();
-                    }
-                }, 500);
-            }
+            stopAudio('background');
+            playAudio('spin');
+            
+            // Start tension audio after spin sound
+            setTimeout(() => {
+                if (isSpinning) {
+                    playAudio('tension', true);
+                }
+            }, 500);
 
             // Add spinning class
             numberWheel.classList.add('spinning');
@@ -1260,26 +1169,24 @@
                 clearInterval(valueInterval);
                 
                 // Final values
-                window.gameState.selectedNumber = Math.floor(Math.random() * 10) + 1;
-                window.gameState.selectedIndex = Math.floor(Math.random() * names.length);
-                window.gameState.selectedName = names[window.gameState.selectedIndex];
+                selectedNumber = Math.floor(Math.random() * 10) + 1;
+                selectedIndex = Math.floor(Math.random() * names.length);
+                selectedName = names[selectedIndex];
                 
-                numberValue.textContent = window.gameState.selectedNumber;
-                nameValue.textContent = shortNames[window.gameState.selectedIndex];
+                numberValue.textContent = selectedNumber;
+                nameValue.textContent = shortNames[selectedIndex];
                 
                 // Remove spinning class
                 numberWheel.classList.remove('spinning');
                 nameWheel.classList.remove('spinning');
                 
                 // Stop tension audio
-                if (audioManager) {
-                    audioManager.stop('tension');
-                }
+                stopAudio('tension');
                 
                 // Show result after a brief pause
                 setTimeout(() => {
                     showResult();
-                    window.gameState.isSpinning = false;
+                    isSpinning = false;
                     spinButton.disabled = false;
                 }, 500);
             }, spinDuration);
@@ -1287,38 +1194,33 @@
 
         // Result Display
         function showResult() {
-            resultName.textContent = window.gameState.selectedName;
-            resultNumber.textContent = window.gameState.selectedNumber;
+            resultName.textContent = selectedName;
+            resultNumber.textContent = selectedNumber;
             resultPhrase.textContent = phrases[Math.floor(Math.random() * phrases.length)];
             
             resultOverlay.classList.add('active');
             createConfetti();
             
             // Play applaud sound
-            if (audioManager && audioManager.isUnlocked) {
-                const applaudSource = audioManager.playApplaud();
-                
-                if (applaudSource) {
-                    applaudSource.addEventListener('ended', () => {
-                        hideResult();
-                    });
-                } else {
-                    // Fallback if audio doesn't play
-                    setTimeout(hideResult, 5000);
-                }
-            } else {
-                // No audio fallback
-                setTimeout(hideResult, 5000);
-            }
+            playAudio('applaud');
+            
+            // Get applaud duration or use fallback
+            const applaudDuration = audioElements.applaud.duration * 1000 || 5000;
+            
+            // Auto-hide after applaud duration
+            setTimeout(() => {
+                hideResult();
+            }, applaudDuration);
         }
 
         function hideResult() {
             resultOverlay.classList.remove('active');
             clearConfetti();
+            stopAudio('applaud');
             
             // Resume background music
-            if (audioManager && audioManager.isUnlocked && !audioManager.isMuted) {
-                audioManager.playBackground();
+            if (!isMuted && audioUnlocked) {
+                playAudio('background', true);
             }
         }
 
@@ -1356,15 +1258,11 @@
 
         // Keyboard Support
         document.addEventListener('keydown', (e) => {
-            // Prevent default for space to avoid page scroll
-            if (e.key === ' ') {
-                e.preventDefault();
-            }
-
             switch(e.key) {
                 case ' ':
                 case 'Enter':
-                    if (!window.gameState.isSpinning && !resultOverlay.classList.contains('active')) {
+                    e.preventDefault();
+                    if (!isSpinning && !resultOverlay.classList.contains('active')) {
                         spinBothWheels();
                     }
                     break;
@@ -1384,15 +1282,17 @@
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
+            // Show initial status
+            audioStatus.textContent = 'Klicken Sie irgendwo, um Audio zu aktivieren';
+            audioStatus.classList.add('visible');
+            
             initializeEffects();
             
-            // Initialize audio manager
-            audioManager = new AudioManager();
-            window.audioManager = audioManager; // For debugging
-            
-            // Add interactions
+            // Add wheel interactions
             addWheelInteractions(numberWheel);
             addWheelInteractions(nameWheel);
+            
+            // Button listeners
             spinButton.addEventListener('click', spinBothWheels);
             audioControls.addEventListener('click', toggleAudio);
             
@@ -1402,6 +1302,18 @@
                     hideResult();
                 }
             });
+            
+            // Unlock audio on first user interaction
+            const unlockHandler = () => {
+                unlockAllAudio();
+                document.removeEventListener('click', unlockHandler);
+                document.removeEventListener('touchstart', unlockHandler);
+                document.removeEventListener('keydown', unlockHandler);
+            };
+            
+            document.addEventListener('click', unlockHandler, { once: true });
+            document.addEventListener('touchstart', unlockHandler, { once: true });
+            document.addEventListener('keydown', unlockHandler, { once: true });
         });
     </script>
 </body>
