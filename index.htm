@@ -915,6 +915,7 @@
         let isMuted = true; // Start muted
         let applaudDuration = 0;
         let isAudioUnlocked = false;
+        let isFirstUnmute = true;
 
         // Initialize Audio with cross-browser compatibility
         function initializeAudio() {
@@ -952,6 +953,39 @@
 
         function toggleAudio() {
             unlockAudio(); // Ensure audio is unlocked
+            
+            // Handle first unmute with auto-mute/unmute
+            if (isFirstUnmute && isMuted) {
+                isFirstUnmute = false;
+                
+                // First unmute
+                isMuted = false;
+                audioControls.classList.remove('muted');
+                
+                // Wait 100ms then mute again
+                setTimeout(() => {
+                    isMuted = true;
+                    audioControls.classList.add('muted');
+                    
+                    // Stop all audio
+                    backgroundAudio.pause();
+                    tensionAudio.pause();
+                    applaudAudio.pause();
+                    
+                    // Wait another 100ms then unmute again
+                    setTimeout(() => {
+                        isMuted = false;
+                        audioControls.classList.remove('muted');
+                        if (!isSpinning) {
+                            playAudioSafely(backgroundAudio);
+                        }
+                    }, 100);
+                }, 100);
+                
+                return;
+            }
+            
+            // Normal toggle behavior
             isMuted = !isMuted;
             audioControls.classList.toggle('muted', isMuted);
             
