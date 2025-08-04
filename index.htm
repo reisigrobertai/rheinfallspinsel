@@ -914,7 +914,6 @@
         let selectedIndex = 0;
         let isMuted = true; // Start muted
         let applaudDuration = 0;
-        let audioUnlocked = false;
 
         // Initialize Audio with cross-browser compatibility
         function initializeAudio() {
@@ -928,16 +927,6 @@
             const audioElements = [backgroundAudio, spinAudio, tensionAudio, applaudAudio];
             audioElements.forEach(audio => {
                 audio.load();
-                
-                // Error handling
-                audio.addEventListener('error', (e) => {
-                    console.error(`Error loading audio ${audio.id}:`, e);
-                });
-
-                // Safari specific handling
-                audio.addEventListener('loadeddata', () => {
-                    console.log(`${audio.id} loaded successfully`);
-                });
             });
 
             // Get applaud duration when metadata is loaded
@@ -947,28 +936,6 @@
 
             // Audio control toggle
             audioControls.addEventListener('click', toggleAudio);
-
-            // Unlock audio on first user interaction (for Safari/iOS)
-            const unlockAudio = () => {
-                if (!audioUnlocked) {
-                    audioUnlocked = true;
-                    
-                    // Create and play a silent buffer to unlock audio
-                    audioElements.forEach(audio => {
-                        audio.play().then(() => {
-                            audio.pause();
-                            audio.currentTime = 0;
-                        }).catch(() => {});
-                    });
-
-                    console.log('Audio unlocked');
-                }
-            };
-
-            // Multiple event listeners for different browsers
-            ['click', 'touchstart', 'touchend'].forEach(event => {
-                document.addEventListener(event, unlockAudio, { once: true });
-            });
         }
 
         function toggleAudio() {
@@ -980,9 +947,8 @@
                 tensionAudio.pause();
                 applaudAudio.pause();
             } else {
-                if (!isSpinning) {
-                    playAudioSafely(backgroundAudio);
-                }
+                // Unlock and play background
+                playAudioSafely(backgroundAudio);
             }
         }
 
@@ -994,19 +960,12 @@
             const playPromise = audio.play();
 
             if (playPromise !== undefined) {
-                playPromise
-                    .then(() => {
-                        console.log(`Playing ${audio.id}`);
-                    })
-                    .catch(error => {
-                        console.error(`Error playing ${audio.id}:`, error);
-                        // Retry on user interaction
-                        if (!isMuted) {
-                            document.addEventListener('click', () => {
-                                audio.play().catch(() => {});
-                            }, { once: true });
-                        }
-                    });
+                playPromise.catch(() => {
+                    // Retry on next user interaction if blocked
+                    document.addEventListener('click', () => {
+                        audio.play();
+                    }, { once: true });
+                });
             }
         }
 
@@ -1210,19 +1169,6 @@
                 resultOverlay.classList.remove('active');
                 clearConfetti();
             });
-
-            // Try to unlock audio context on page load for better compatibility
-            if ('AudioContext' in window || 'webkitAudioContext' in window) {
-                const AudioContext = window.AudioContext || window.webkitAudioContext;
-                const audioContext = new AudioContext();
-                
-                // Resume context on user interaction
-                document.addEventListener('click', () => {
-                    if (audioContext.state === 'suspended') {
-                        audioContext.resume();
-                    }
-                }, { once: true });
-            }
         });
 
         // Add keyboard support
@@ -1239,4 +1185,3 @@
     </script>
 </body>
 </html>
-
