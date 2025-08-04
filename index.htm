@@ -670,28 +670,6 @@
     </style>
 </head>
 <body>
-    <!-- Audio Elements with multiple formats for compatibility -->
-    <audio id="backgroundAudio" loop preload="auto">
-        <source src="audios/background.mp3" type="audio/mpeg">
-        <source src="audios/background.ogg" type="audio/ogg">
-        <source src="audios/background.wav" type="audio/wav">
-    </audio>
-    <audio id="spinAudio" preload="auto">
-        <source src="audios/spin.mp3" type="audio/mpeg">
-        <source src="audios/spin.ogg" type="audio/ogg">
-        <source src="audios/spin.wav" type="audio/wav">
-    </audio>
-    <audio id="tensionAudio" loop preload="auto">
-        <source src="audios/tension.mp3" type="audio/mpeg">
-        <source src="audios/tension.ogg" type="audio/ogg">
-        <source src="audios/tension.wav" type="audio/wav">
-    </audio>
-    <audio id="applaudAudio" preload="auto">
-        <source src="audios/applaud.mp3" type="audio/mpeg">
-        <source src="audios/applaud.ogg" type="audio/ogg">
-        <source src="audios/applaud.wav" type="audio/wav">
-    </audio>
-
     <!-- Audio Controls -->
     <div class="audio-controls muted" id="audioControls">
         <div class="audio-icon"></div>
@@ -884,6 +862,106 @@
             "Glorreicher Sieg! Die Glorie hält bis zum nächsten Dreh."
         ];
 
+        // --- AudioManager Class ---
+        class AudioManager {
+            constructor() {
+                this.audioContext = null;
+                this.buffers = {};
+                this.isMuted = true;
+                this.isUnlocked = false;
+                this.activeSources = {};
+                this.init();
+            }
+
+            init() {
+                try {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    this.audioContext = new AudioContext();
+                } catch (e) {
+                    console.error("Web Audio API not supported.");
+                    return;
+                }
+                
+                // Add unlock listeners
+                ['click', 'touchstart'].forEach(event => {
+                    document.addEventListener(event, () => this.unlockAudio(), { once: true });
+                });
+            }
+
+            async unlockAudio() {
+                if (!this.audioContext || this.isUnlocked) return;
+                if (this.audioContext.state === 'suspended') {
+                    await this.audioContext.resume();
+                }
+
+                this.isUnlocked = true;
+                await this.loadAllSounds();
+            }
+
+            async loadAllSounds() {
+                const soundFiles = {
+                    background: 'audios/background.mp3',
+                    spin: 'audios/spin.mp3',
+                    tension: 'audios/tension.mp3',
+                    applaud: 'audios/applaud.mp3'
+                };
+                for (const [name, url] of Object.entries(soundFiles)) {
+                    try {
+                        const response = await fetch(url);
+                        const arrayBuffer = await response.arrayBuffer();
+                        this.buffers[name] = await this.audioContext.decodeAudioData(arrayBuffer);
+                    } catch (e) {
+                        console.error(`Error loading sound: ${name}`, e);
+                    }
+                }
+            }
+
+            play(name, { loop = false, volume = 1, onended = null } = {}) {
+                if (this.isMuted || !this.isUnlocked || !this.buffers[name]) return null;
+
+                const source = this.audioContext.createBufferSource();
+                const gainNode = this.audioContext.createGain();
+                
+                source.buffer = this.buffers[name];
+                source.loop = loop;
+                source.connect(gainNode);
+                gainNode.gain.setValueAtTime(volume, this.audioContext.currentTime);
+                gainNode.connect(this.audioContext.destination);
+                source.start(0);
+
+                if (onended) {
+                    source.onended = onended;
+                }
+
+                if (loop) {
+                    this.stop(name); // Stop previous loop if any
+                    this.activeSources[name] = source;
+                }
+                return source;
+            }
+
+            stop(name) {
+                if (this.activeSources[name]) {
+                    this.activeSources[name].stop(0);
+                    delete this.activeSources[name];
+                }
+            }
+
+            setMuted(muted) {
+                this.isMuted = muted;
+                if (muted) {
+                    this.stop('background');
+                    this.stop('tension');
+                } else {
+                    if (!isSpinning) {
+                        this.play('background', { loop: true, volume: 0.3 });
+                    }
+                }
+            }
+        }
+
+        let audioManager;
+        
         // DOM Elements
         const numberWheel = document.getElementById('numberWheel');
         const nameWheel = document.getElementById('nameWheel');
@@ -900,117 +978,13 @@
         const soundWaves = document.getElementById('soundWaves');
         const audioControls = document.getElementById('audioControls');
 
-        // Audio Elements
-        const backgroundAudio = document.getElementById('backgroundAudio');
-        const spinAudio = document.getElementById('spinAudio');
-        const tensionAudio = document.getElementById('tensionAudio');
-        const applaudAudio = document.getElementById('applaudAudio');
-
         // Game State
         let isSpinning = false;
         let totalSpins = 0;
         let selectedName = '';
         let selectedNumber = 0;
         let selectedIndex = 0;
-        let isMuted = true; // Start muted
-        let applaudDuration = 0;
-        let isAudioUnlocked = false;
-        let isFirstUnmute = true;
-
-        // Initialize Audio with cross-browser compatibility
-        function initializeAudio() {
-            // Set volumes
-            backgroundAudio.volume = 0.3;
-            spinAudio.volume = 0.5;
-            tensionAudio.volume = 0.4;
-            applaudAudio.volume = 0.6;
-
-            // Get applaud duration when metadata is loaded
-            applaudAudio.addEventListener('loadedmetadata', () => {
-                applaudDuration = applaudAudio.duration * 1000; // Convert to milliseconds
-            });
-
-            // Audio control toggle
-            audioControls.addEventListener('click', toggleAudio);
-        }
-
-        // Unlock audio on first user interaction (for Safari/iOS)
-        function unlockAudio() {
-            if (isAudioUnlocked) return;
-            isAudioUnlocked = true;
-
-            const audioElements = [backgroundAudio, spinAudio, tensionAudio, applaudAudio];
-            audioElements.forEach(audio => {
-                const playPromise = audio.play();
-                if (playPromise !== undefined) {
-                    playPromise.then(() => {
-                        audio.pause();
-                        audio.currentTime = 0;
-                    }).catch(() => {});
-                }
-            });
-        }
-
-        function toggleAudio() {
-            unlockAudio(); // Ensure audio is unlocked
-            
-            // Handle first unmute with auto-mute/unmute
-            if (isFirstUnmute && isMuted) {
-                isFirstUnmute = false;
-                
-                // First unmute
-                isMuted = false;
-                audioControls.classList.remove('muted');
-                
-                // Wait 100ms then mute again
-                setTimeout(() => {
-                    isMuted = true;
-                    audioControls.classList.add('muted');
-                    
-                    // Stop all audio
-                    backgroundAudio.pause();
-                    tensionAudio.pause();
-                    applaudAudio.pause();
-                    
-                    // Wait another 100ms then unmute again
-                    setTimeout(() => {
-                        isMuted = false;
-                        audioControls.classList.remove('muted');
-                        if (!isSpinning) {
-                            playAudioSafely(backgroundAudio);
-                        }
-                    }, 100);
-                }, 100);
-                
-                return;
-            }
-            
-            // Normal toggle behavior
-            isMuted = !isMuted;
-            audioControls.classList.toggle('muted', isMuted);
-            
-            if (isMuted) {
-                backgroundAudio.pause();
-                tensionAudio.pause();
-                applaudAudio.pause();
-            } else {
-                if (!isSpinning) {
-                    playAudioSafely(backgroundAudio);
-                }
-            }
-        }
-
-        // Safe audio playing function with promise handling
-        function playAudioSafely(audio) {
-            if (!audio || isMuted) return;
-
-            audio.currentTime = 0;
-            const playPromise = audio.play();
-
-            if (playPromise !== undefined) {
-                playPromise.catch(() => {});
-            }
-        }
+        let applaudDuration = 5000; // Default fallback
 
         // Initialize Background Effects
         function initializeEffects() {
@@ -1069,7 +1043,6 @@
         // Spinning Logic
         function spinBothWheels() {
             if (isSpinning) return;
-            unlockAudio(); // Ensure audio is unlocked
 
             isSpinning = true;
             spinButton.disabled = true;
@@ -1077,17 +1050,15 @@
             spinCount.textContent = totalSpins;
 
             // Audio handling
-            if (!isMuted) {
-                backgroundAudio.pause();
-                playAudioSafely(spinAudio);
-                
-                // Play tension audio after spin audio ends
-                spinAudio.addEventListener('ended', () => {
-                    if (!isMuted && isSpinning) {
-                        playAudioSafely(tensionAudio);
+            audioManager.stop('background');
+            audioManager.play('spin', {
+                volume: 0.5,
+                onended: () => {
+                    if (isSpinning) {
+                        audioManager.play('tension', { loop: true, volume: 0.4 });
                     }
-                }, { once: true });
-            }
+                }
+            });
 
             // Add spinning class
             numberWheel.classList.add('spinning');
@@ -1120,10 +1091,7 @@
                 nameWheel.classList.remove('spinning');
                 
                 // Stop tension audio
-                if (!isMuted) {
-                    tensionAudio.pause();
-                    tensionAudio.currentTime = 0;
-                }
+                audioManager.stop('tension');
                 
                 // Show result after a brief pause
                 setTimeout(() => {
@@ -1134,7 +1102,7 @@
             }, spinDuration);
         }
 
-        // Result Display with improved audio handling
+        // Result Display
         function showResult() {
             resultName.textContent = selectedName;
             resultNumber.textContent = selectedNumber;
@@ -1143,13 +1111,13 @@
             resultOverlay.classList.add('active');
             createConfetti();
             
-            // Play applaud sound with Safari compatibility
-            if (!isMuted) {
-                playAudioSafely(applaudAudio);
+            // Play applaud sound
+            audioManager.play('applaud', { volume: 0.6 });
+
+            // Set applaud duration if available
+            if (audioManager.buffers.applaud) {
+                applaudDuration = audioManager.buffers.applaud.duration * 1000;
             }
-            
-            // Use applaud duration or fallback to 5 seconds
-            const displayDuration = applaudDuration || 5000;
             
             // Auto-hide after applaud duration
             setTimeout(() => {
@@ -1157,12 +1125,8 @@
                 clearConfetti();
                 
                 // Resume background music
-                if (!isMuted) {
-                    applaudAudio.pause();
-                    applaudAudio.currentTime = 0;
-                    playAudioSafely(backgroundAudio);
-                }
-            }, displayDuration);
+                audioManager.play('background', { loop: true, volume: 0.3 });
+            }, applaudDuration);
         }
 
         // Confetti Effect
@@ -1199,23 +1163,23 @@
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
+            audioManager = new AudioManager();
             initializeEffects();
-            initializeAudio();
             addWheelInteractions(numberWheel);
             addWheelInteractions(nameWheel);
             spinButton.addEventListener('click', spinBothWheels);
 
-            // Add the global audio unlock listener
-            document.addEventListener('click', unlockAudio, { once: true });
-            document.addEventListener('touchstart', unlockAudio, { once: true });
+            audioControls.addEventListener('click', () => {
+                audioManager.setMuted(!audioManager.isMuted);
+                audioControls.classList.toggle('muted', audioManager.isMuted);
+            });
             
-            // Close result overlay on click (but respect applaud duration)
+            // Close result overlay on click
             resultOverlay.addEventListener('click', () => {
-                // Don't allow closing while applaud is playing
-                if (!applaudAudio.paused) return;
-                
                 resultOverlay.classList.remove('active');
                 clearConfetti();
+                audioManager.stop('applaud');
+                audioManager.play('background', { loop: true, volume: 0.3 });
             });
         });
 
@@ -1225,9 +1189,11 @@
                 e.preventDefault();
                 spinBothWheels();
             }
-            if (e.key === 'Escape' && resultOverlay.classList.contains('active') && applaudAudio.paused) {
+            if (e.key === 'Escape' && resultOverlay.classList.contains('active')) {
                 resultOverlay.classList.remove('active');
                 clearConfetti();
+                audioManager.stop('applaud');
+                audioManager.play('background', { loop: true, volume: 0.3 });
             }
         });
     </script>
