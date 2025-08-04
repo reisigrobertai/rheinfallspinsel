@@ -670,18 +670,26 @@
     </style>
 </head>
 <body>
-    <!-- Audio Elements -->
-    <audio id="backgroundAudio" loop>
+    <!-- Audio Elements with multiple formats for compatibility -->
+    <audio id="backgroundAudio" loop preload="auto">
         <source src="audios/background.mp3" type="audio/mpeg">
+        <source src="audios/background.ogg" type="audio/ogg">
+        <source src="audios/background.wav" type="audio/wav">
     </audio>
-    <audio id="spinAudio">
+    <audio id="spinAudio" preload="auto">
         <source src="audios/spin.mp3" type="audio/mpeg">
+        <source src="audios/spin.ogg" type="audio/ogg">
+        <source src="audios/spin.wav" type="audio/wav">
     </audio>
-    <audio id="tensionAudio" loop>
+    <audio id="tensionAudio" loop preload="auto">
         <source src="audios/tension.mp3" type="audio/mpeg">
+        <source src="audios/tension.ogg" type="audio/ogg">
+        <source src="audios/tension.wav" type="audio/wav">
     </audio>
-    <audio id="applaudAudio">
+    <audio id="applaudAudio" preload="auto">
         <source src="audios/applaud.mp3" type="audio/mpeg">
+        <source src="audios/applaud.ogg" type="audio/ogg">
+        <source src="audios/applaud.wav" type="audio/wav">
     </audio>
 
     <!-- Audio Controls -->
@@ -906,14 +914,31 @@
         let selectedIndex = 0;
         let isMuted = true; // Start muted
         let applaudDuration = 0;
+        let audioUnlocked = false;
 
-        // Initialize Audio
+        // Initialize Audio with cross-browser compatibility
         function initializeAudio() {
             // Set volumes
             backgroundAudio.volume = 0.3;
             spinAudio.volume = 0.5;
             tensionAudio.volume = 0.4;
             applaudAudio.volume = 0.6;
+
+            // Preload all audio files
+            const audioElements = [backgroundAudio, spinAudio, tensionAudio, applaudAudio];
+            audioElements.forEach(audio => {
+                audio.load();
+                
+                // Error handling
+                audio.addEventListener('error', (e) => {
+                    console.error(`Error loading audio ${audio.id}:`, e);
+                });
+
+                // Safari specific handling
+                audio.addEventListener('loadeddata', () => {
+                    console.log(`${audio.id} loaded successfully`);
+                });
+            });
 
             // Get applaud duration when metadata is loaded
             applaudAudio.addEventListener('loadedmetadata', () => {
@@ -922,6 +947,28 @@
 
             // Audio control toggle
             audioControls.addEventListener('click', toggleAudio);
+
+            // Unlock audio on first user interaction (for Safari/iOS)
+            const unlockAudio = () => {
+                if (!audioUnlocked) {
+                    audioUnlocked = true;
+                    
+                    // Create and play a silent buffer to unlock audio
+                    audioElements.forEach(audio => {
+                        audio.play().then(() => {
+                            audio.pause();
+                            audio.currentTime = 0;
+                        }).catch(() => {});
+                    });
+
+                    console.log('Audio unlocked');
+                }
+            };
+
+            // Multiple event listeners for different browsers
+            ['click', 'touchstart', 'touchend'].forEach(event => {
+                document.addEventListener(event, unlockAudio, { once: true });
+            });
         }
 
         function toggleAudio() {
@@ -934,8 +981,32 @@
                 applaudAudio.pause();
             } else {
                 if (!isSpinning) {
-                    backgroundAudio.play();
+                    playAudioSafely(backgroundAudio);
                 }
+            }
+        }
+
+        // Safe audio playing function with promise handling
+        function playAudioSafely(audio) {
+            if (!audio || isMuted) return;
+
+            audio.currentTime = 0;
+            const playPromise = audio.play();
+
+            if (playPromise !== undefined) {
+                playPromise
+                    .then(() => {
+                        console.log(`Playing ${audio.id}`);
+                    })
+                    .catch(error => {
+                        console.error(`Error playing ${audio.id}:`, error);
+                        // Retry on user interaction
+                        if (!isMuted) {
+                            document.addEventListener('click', () => {
+                                audio.play().catch(() => {});
+                            }, { once: true });
+                        }
+                    });
             }
         }
 
@@ -1005,10 +1076,12 @@
             // Audio handling
             if (!isMuted) {
                 backgroundAudio.pause();
-                spinAudio.play();
+                playAudioSafely(spinAudio);
+                
+                // Play tension audio after spin audio ends
                 spinAudio.addEventListener('ended', () => {
-                    if (!isMuted) {
-                        tensionAudio.play();
+                    if (!isMuted && isSpinning) {
+                        playAudioSafely(tensionAudio);
                     }
                 }, { once: true });
             }
@@ -1058,7 +1131,7 @@
             }, spinDuration);
         }
 
-        // Result Display
+        // Result Display with improved audio handling
         function showResult() {
             resultName.textContent = selectedName;
             resultNumber.textContent = selectedNumber;
@@ -1067,9 +1140,9 @@
             resultOverlay.classList.add('active');
             createConfetti();
             
-            // Play applaud sound
+            // Play applaud sound with Safari compatibility
             if (!isMuted) {
-                applaudAudio.play();
+                playAudioSafely(applaudAudio);
             }
             
             // Use applaud duration or fallback to 5 seconds
@@ -1084,7 +1157,7 @@
                 if (!isMuted) {
                     applaudAudio.pause();
                     applaudAudio.currentTime = 0;
-                    backgroundAudio.play();
+                    playAudioSafely(backgroundAudio);
                 }
             }, displayDuration);
         }
@@ -1137,6 +1210,19 @@
                 resultOverlay.classList.remove('active');
                 clearConfetti();
             });
+
+            // Try to unlock audio context on page load for better compatibility
+            if ('AudioContext' in window || 'webkitAudioContext' in window) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                const audioContext = new AudioContext();
+                
+                // Resume context on user interaction
+                document.addEventListener('click', () => {
+                    if (audioContext.state === 'suspended') {
+                        audioContext.resume();
+                    }
+                }, { once: true });
+            }
         });
 
         // Add keyboard support
