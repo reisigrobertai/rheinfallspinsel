@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="title" content="Das ultimative Glücksrad-Spektakel">
-    <meta name="description" content="Ein interaktives Glücksrad-Spiel mit modernem Design">
+    <meta name="title" content="Glücksrad Deluxe">
+    <meta name="description" content="Spießroulette Premium">
+    <meta name="image" content="/LogoPlain.jpg"> 
     <link rel="icon" type="image/svg" href="/LogoPlainSVG.svg">
-    <title>Rheinfallspinsel - Glücksrad Deluxe</title>
+    <title>Rheinfallspinsel - Spießroulette Premium</title>
     <style>
         * {
             margin: 0;
@@ -608,13 +609,6 @@
                 right: 10px;
                 font-size: 0.7rem;
             }
-
-            .stats-container {
-                bottom: 60px;
-                right: 10px;
-                padding: 0.8rem;
-                font-size: 0.8rem;
-            }
         }
 
         @media (max-width: 480px) {
@@ -677,25 +671,6 @@
                 transform: scale(2);
                 opacity: 0;
             }
-        }
-
-        /* Stats Display */
-        .stats-container {
-            position: fixed;
-            bottom: 60px;
-            right: 20px;
-            background: var(--glass-bg);
-            backdrop-filter: blur(10px);
-            padding: 1rem;
-            border-radius: 10px;
-            border: 1px solid var(--glass-border);
-            font-size: 0.9rem;
-            opacity: 0.7;
-            transition: opacity 0.3s ease;
-        }
-
-        .stats-container:hover {
-            opacity: 1;
         }
 
         /* Sound Wave Visualization */
@@ -809,11 +784,6 @@
 
     <!-- Confetti Container -->
     <div class="confetti-container" id="confettiContainer"></div>
-
-    <!-- Stats Display -->
-    <div class="stats-container">
-        <div>Spins: <span id="spinCount">0</span></div>
-    </div>
 
     <!-- Keyboard Help -->
     <div class="keyboard-help">
@@ -979,12 +949,12 @@
 
         // Game State
         let isSpinning = false;
-        let totalSpins = 0;
         let selectedName = '';
         let selectedNumber = 0;
         let selectedIndex = 0;
         let isMuted = true;
         let audioUnlocked = false;
+        let isFirstUnmute = true;
 
         // DOM Elements
         const numberWheel = document.getElementById('numberWheel');
@@ -997,7 +967,6 @@
         const resultNumber = document.getElementById('resultNumber');
         const resultPhrase = document.getElementById('resultPhrase');
         const confettiContainer = document.getElementById('confettiContainer');
-        const spinCount = document.getElementById('spinCount');
         const particles = document.getElementById('particles');
         const soundWaves = document.getElementById('soundWaves');
         const audioControls = document.getElementById('audioControls');
@@ -1118,8 +1087,28 @@
             setTimeout(() => pulse.remove(), 2000);
         }
 
-        // Toggle Audio
+        // Toggle Audio - Fixed for first unmute
         function toggleAudio() {
+            // Special handling for first unmute
+            if (isFirstUnmute && isMuted) {
+                isFirstUnmute = false;
+                isMuted = false;
+                audioControls.classList.remove('muted');
+                
+                // Stop any playing audio immediately
+                stopAllAudio();
+                
+                // Small delay then start background music
+                setTimeout(() => {
+                    if (!isMuted && audioUnlocked && !isSpinning) {
+                        playAudio('background', true);
+                    }
+                }, 100);
+                
+                return;
+            }
+            
+            // Normal toggle
             isMuted = !isMuted;
             audioControls.classList.toggle('muted', isMuted);
             
@@ -1136,8 +1125,6 @@
 
             isSpinning = true;
             spinButton.disabled = true;
-            totalSpins++;
-            spinCount.textContent = totalSpins;
 
             // Audio handling
             stopAudio('background');
