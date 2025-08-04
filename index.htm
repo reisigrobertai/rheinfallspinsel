@@ -914,6 +914,7 @@
         let selectedIndex = 0;
         let isMuted = true; // Start muted
         let applaudDuration = 0;
+        let isAudioUnlocked = false;
 
         // Initialize Audio with cross-browser compatibility
         function initializeAudio() {
@@ -922,12 +923,6 @@
             spinAudio.volume = 0.5;
             tensionAudio.volume = 0.4;
             applaudAudio.volume = 0.6;
-
-            // Preload all audio files
-            const audioElements = [backgroundAudio, spinAudio, tensionAudio, applaudAudio];
-            audioElements.forEach(audio => {
-                audio.load();
-            });
 
             // Get applaud duration when metadata is loaded
             applaudAudio.addEventListener('loadedmetadata', () => {
@@ -938,7 +933,25 @@
             audioControls.addEventListener('click', toggleAudio);
         }
 
+        // Unlock audio on first user interaction (for Safari/iOS)
+        function unlockAudio() {
+            if (isAudioUnlocked) return;
+            isAudioUnlocked = true;
+
+            const audioElements = [backgroundAudio, spinAudio, tensionAudio, applaudAudio];
+            audioElements.forEach(audio => {
+                const playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        audio.pause();
+                        audio.currentTime = 0;
+                    }).catch(() => {});
+                }
+            });
+        }
+
         function toggleAudio() {
+            unlockAudio(); // Ensure audio is unlocked
             isMuted = !isMuted;
             audioControls.classList.toggle('muted', isMuted);
             
@@ -947,8 +960,9 @@
                 tensionAudio.pause();
                 applaudAudio.pause();
             } else {
-                // Unlock and play background
-                playAudioSafely(backgroundAudio);
+                if (!isSpinning) {
+                    playAudioSafely(backgroundAudio);
+                }
             }
         }
 
@@ -960,12 +974,7 @@
             const playPromise = audio.play();
 
             if (playPromise !== undefined) {
-                playPromise.catch(() => {
-                    // Retry on next user interaction if blocked
-                    document.addEventListener('click', () => {
-                        audio.play();
-                    }, { once: true });
-                });
+                playPromise.catch(() => {});
             }
         }
 
@@ -1026,6 +1035,7 @@
         // Spinning Logic
         function spinBothWheels() {
             if (isSpinning) return;
+            unlockAudio(); // Ensure audio is unlocked
 
             isSpinning = true;
             spinButton.disabled = true;
@@ -1160,6 +1170,10 @@
             addWheelInteractions(numberWheel);
             addWheelInteractions(nameWheel);
             spinButton.addEventListener('click', spinBothWheels);
+
+            // Add the global audio unlock listener
+            document.addEventListener('click', unlockAudio, { once: true });
+            document.addEventListener('touchstart', unlockAudio, { once: true });
             
             // Close result overlay on click (but respect applaud duration)
             resultOverlay.addEventListener('click', () => {
