@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -777,7 +776,7 @@
             <h2 class="result-title">GEWINNER!</h2>
             <div class="result-details">
                 <span class="result-name" id="resultName"></span>
-                <span class="result-strokes"><span id="resultNumber"></span> Striche</span>
+                <span class="result-strokes" id="resultStrokes"><span id="resultNumber"></span> Striche</span>
             </div>
             <div class="result-phrase" id="resultPhrase"></div>
         </div>
@@ -956,6 +955,7 @@
         let isMuted = true;
         let audioUnlocked = false;
         let isFirstUnmute = true;
+        let currentSpinType = 'both'; // 'both', 'number', or 'name'
 
         // DOM Elements
         const numberWheel = document.getElementById('numberWheel');
@@ -967,6 +967,7 @@
         const resultName = document.getElementById('resultName');
         const resultNumber = document.getElementById('resultNumber');
         const resultPhrase = document.getElementById('resultPhrase');
+        const resultStrokes = document.getElementById('resultStrokes');
         const confettiContainer = document.getElementById('confettiContainer');
         const particles = document.getElementById('particles');
         const soundWaves = document.getElementById('soundWaves');
@@ -1076,7 +1077,11 @@
 
             wheel.addEventListener('click', () => {
                 if (!isSpinning) {
-                    spinBothWheels();
+                    if (wheel.id === 'numberWheel') {
+                        spinSingleWheel('number');
+                    } else if (wheel.id === 'nameWheel') {
+                        spinSingleWheel('name');
+                    }
                 }
             });
         }
@@ -1120,11 +1125,81 @@
             }
         }
 
-        // Spinning Logic
+        // Single Wheel Spinning
+        function spinSingleWheel(type) {
+            if (isSpinning) return;
+
+            isSpinning = true;
+            currentSpinType = type;
+            spinButton.disabled = true;
+
+            // Audio handling
+            stopAudio('background');
+            playAudio('spin');
+            
+            // Start tension audio after spin sound
+            setTimeout(() => {
+                if (isSpinning) {
+                    playAudio('tension', true);
+                }
+            }, 500);
+
+            // Add spinning class to appropriate wheel
+            if (type === 'number') {
+                numberWheel.classList.add('spinning');
+                nameValue.textContent = '?'; // Reset other wheel
+            } else {
+                nameWheel.classList.add('spinning');
+                numberValue.textContent = '?'; // Reset other wheel
+            }
+
+            // Random spinning duration between 5-20 seconds
+            const spinDuration = Math.random() * 15000 + 5000;
+
+            // Animate values during spin
+            const valueInterval = setInterval(() => {
+                if (type === 'number') {
+                    numberValue.textContent = Math.floor(Math.random() * 10) + 1;
+                } else {
+                    const randomIndex = Math.floor(Math.random() * names.length);
+                    nameValue.textContent = shortNames[randomIndex];
+                }
+            }, 100);
+
+            // Stop spinning
+            setTimeout(() => {
+                clearInterval(valueInterval);
+                
+                // Final values
+                if (type === 'number') {
+                    selectedNumber = Math.floor(Math.random() * 10) + 1;
+                    numberValue.textContent = selectedNumber;
+                    numberWheel.classList.remove('spinning');
+                } else {
+                    selectedIndex = Math.floor(Math.random() * names.length);
+                    selectedName = names[selectedIndex];
+                    nameValue.textContent = shortNames[selectedIndex];
+                    nameWheel.classList.remove('spinning');
+                }
+                
+                // Stop tension audio
+                stopAudio('tension');
+                
+                // Show result after a brief pause
+                setTimeout(() => {
+                    showSingleResult(type);
+                    isSpinning = false;
+                    spinButton.disabled = false;
+                }, 500);
+            }, spinDuration);
+        }
+
+        // Spinning Logic for both wheels
         function spinBothWheels() {
             if (isSpinning) return;
 
             isSpinning = true;
+            currentSpinType = 'both';
             spinButton.disabled = true;
 
             // Audio handling
@@ -1180,11 +1255,45 @@
             }, spinDuration);
         }
 
-        // Result Display
+        // Result Display for single wheel
+        function showSingleResult(type) {
+            if (type === 'number') {
+                resultName.style.display = 'none';
+                resultStrokes.innerHTML = `${selectedNumber} Striche`;
+                resultStrokes.style.fontSize = 'clamp(1.8rem, 5vw, 3rem)';
+            } else {
+                resultName.textContent = selectedName;
+                resultName.style.display = 'block';
+                resultStrokes.style.display = 'none';
+            }
+            
+            resultPhrase.style.display = 'none'; // No phrase for single wheel
+            
+            resultOverlay.classList.add('active');
+            createConfetti();
+            
+            // Play applaud sound
+            playAudio('applaud');
+            
+            // Get applaud duration or use fallback
+            const applaudDuration = audioElements.applaud.duration * 1000 || 5000;
+            
+            // Auto-hide after applaud duration
+            setTimeout(() => {
+                hideResult();
+            }, applaudDuration);
+        }
+
+        // Result Display for both wheels
         function showResult() {
             resultName.textContent = selectedName;
+            resultName.style.display = 'block';
             resultNumber.textContent = selectedNumber;
+            resultStrokes.innerHTML = `<span id="resultNumber">${selectedNumber}</span> Striche`;
+            resultStrokes.style.display = 'block';
+            resultStrokes.style.fontSize = '';
             resultPhrase.textContent = phrases[Math.floor(Math.random() * phrases.length)];
+            resultPhrase.style.display = 'block';
             
             resultOverlay.classList.add('active');
             createConfetti();
