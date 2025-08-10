@@ -17,7 +17,7 @@
             background: #0a0a0a;
             color: white;
             min-height: 100vh;
-            padding: 20px;
+            padding: 15px;
         }
 
         .container {
@@ -27,7 +27,8 @@
 
         h1 {
             text-align: center;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
+            font-size: clamp(1.8rem, 5vw, 2.5rem);
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -36,9 +37,9 @@
 
         .login-form {
             max-width: 400px;
-            margin: 100px auto;
+            margin: 50px auto;
             background: #1a1a2e;
-            padding: 30px;
+            padding: 25px;
             border-radius: 15px;
             border: 2px solid rgba(255, 255, 255, 0.1);
         }
@@ -49,32 +50,51 @@
 
         .section {
             background: #1a1a2e;
-            padding: 30px;
+            padding: 20px;
             border-radius: 15px;
             border: 2px solid rgba(255, 255, 255, 0.1);
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
 
         .section h2 {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             color: #4facfe;
+            font-size: clamp(1.2rem, 3vw, 1.5rem);
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
+        .section h3 {
+            margin-top: 20px;
+            margin-bottom: 15px;
+            color: #667eea;
+            font-size: clamp(1rem, 2.5vw, 1.2rem);
         }
 
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        /* Mobile-first table design */
+        .user-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
         }
 
-        th {
+        .user-card {
             background: rgba(255, 255, 255, 0.05);
-            font-weight: 600;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .user-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .user-inputs {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 10px;
         }
 
         input[type="text"], input[type="password"], select {
@@ -88,13 +108,13 @@
         }
 
         .btn {
-            padding: 10px 20px;
+            padding: 10px 15px;
             border: none;
             border-radius: 8px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            margin: 5px;
+            font-size: 14px;
         }
 
         .btn-primary {
@@ -114,16 +134,30 @@
 
         .btn:hover {
             transform: translateY(-2px);
+            opacity: 0.9;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn-group .btn {
+            flex: 1;
+            min-width: 100px;
         }
 
         .error-message {
             color: #ff6b6b;
             margin: 10px 0;
+            font-size: 14px;
         }
 
         .success-message {
             color: #51cf66;
             margin: 10px 0;
+            font-size: 14px;
         }
 
         .form-group {
@@ -139,8 +173,8 @@
 
         .pins-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
             margin-top: 20px;
         }
 
@@ -149,26 +183,154 @@
             border-radius: 10px;
             padding: 15px;
             text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .pin-card img {
             width: 100%;
+            max-width: 200px;
             height: 150px;
             object-fit: cover;
             border-radius: 8px;
             margin-bottom: 10px;
         }
 
-        .logout-btn {
-            position: fixed;
-            top: 20px;
-            right: 20px;
+        .pin-card h4 {
+            margin: 10px 0 5px 0;
+            color: #4facfe;
         }
 
-        @media (max-width: 768px) {
-            .pins-grid {
-                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        .pin-card p {
+            font-size: 12px;
+            color: #999;
+            margin: 5px 0;
+        }
+
+        .logout-btn {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            padding: 8px 16px;
+            font-size: 14px;
+            z-index: 100;
+        }
+
+        /* Desktop optimizations */
+        @media (min-width: 768px) {
+            body {
+                padding: 20px;
             }
+
+            .login-form {
+                margin: 100px auto;
+                padding: 30px;
+            }
+
+            .section {
+                padding: 30px;
+            }
+
+            /* Table view for desktop */
+            .user-list {
+                display: table;
+                width: 100%;
+                border-collapse: collapse;
+            }
+
+            .user-card {
+                display: table-row;
+                background: none;
+                padding: 0;
+                border: none;
+            }
+
+            .user-card:first-child {
+                font-weight: bold;
+                border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+            }
+
+            .user-card > div {
+                display: table-cell;
+                padding: 12px;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                vertical-align: middle;
+            }
+
+            .user-inputs {
+                flex-direction: row;
+                gap: 10px;
+                margin: 0;
+            }
+
+            .user-inputs input {
+                width: 150px;
+            }
+
+            .btn-group {
+                justify-content: flex-end;
+            }
+
+            .btn-group .btn {
+                flex: none;
+                min-width: auto;
+            }
+
+            .pins-grid {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                gap: 20px;
+            }
+
+            .logout-btn {
+                top: 20px;
+                right: 20px;
+                padding: 10px 20px;
+            }
+        }
+
+        /* Add header row for desktop */
+        @media (min-width: 768px) {
+            .user-list::before {
+                content: '';
+                display: table-row;
+            }
+
+            .desktop-header {
+                display: none;
+            }
+
+            @media (min-width: 768px) {
+                .desktop-header {
+                    display: table-row;
+                    font-weight: bold;
+                }
+
+                .desktop-header > div {
+                    display: table-cell;
+                    padding: 12px;
+                    border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+                    color: #4facfe;
+                }
+            }
+        }
+
+        /* Loading spinner */
+        .loading {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top-color: #4facfe;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
     </style>
 </head>
@@ -189,7 +351,7 @@
                     <input type="password" id="adminPassword" required>
                 </div>
                 <div class="error-message" id="loginError"></div>
-                <button type="submit" class="btn btn-primary">Login</button>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Login</button>
             </form>
         </div>
 
@@ -200,25 +362,20 @@
             <!-- Users Section -->
             <div class="section">
                 <h2>Benutzer verwalten</h2>
-                <table id="usersTable">
-                    <thead>
-                        <tr>
-                            <th>Benutzername</th>
-                            <th>Passwort</th>
-                            <th>Aktionen</th>
-                        </tr>
-                    </thead>
-                    <tbody id="usersTableBody">
-                        <!-- Users will be loaded here -->
-                    </tbody>
-                </table>
+                
+                <div class="user-list" id="usersList">
+                    <div class="desktop-header">
+                        <div>Benutzername</div>
+                        <div>Passwort</div>
+                        <div>Aktionen</div>
+                    </div>
+                    <!-- Users will be loaded here -->
+                </div>
                 
                 <h3>Neuen Benutzer hinzufügen</h3>
                 <form id="addUserForm">
-                    <div class="form-group">
+                    <div class="user-inputs">
                         <input type="text" id="newUsername" placeholder="Benutzername" required>
-                    </div>
-                    <div class="form-group">
                         <input type="password" id="newPassword" placeholder="Passwort" required>
                     </div>
                     <button type="submit" class="btn btn-success">Benutzer hinzufügen</button>
@@ -230,7 +387,7 @@
             <!-- Pins Section -->
             <div class="section">
                 <h2>Pins verwalten</h2>
-                <div id="pinsCount"></div>
+                <div id="pinsCount" style="margin-bottom: 15px;"></div>
                 <div class="pins-grid" id="pinsGrid">
                     <!-- Pins will be loaded here -->
                 </div>
@@ -241,6 +398,14 @@
     <script>
         const API_URL = 'https://gluecksrad-backend.rheinfallspinsel.de';
         let adminToken = null;
+        let isMobile = window.innerWidth < 768;
+
+        window.addEventListener('resize', () => {
+            isMobile = window.innerWidth < 768;
+            if (adminToken) {
+                loadUsers(); // Reload to apply correct layout
+            }
+        });
 
         // Login
         document.getElementById('adminLoginForm').addEventListener('submit', async (e) => {
@@ -293,19 +458,51 @@
 
         // Display users
         function displayUsers(users) {
-            const tbody = document.getElementById('usersTableBody');
-            tbody.innerHTML = '';
+            const container = document.getElementById('usersList');
+            
+            // Keep header if it exists
+            const header = container.querySelector('.desktop-header');
+            container.innerHTML = '';
+            if (header && !isMobile) {
+                container.appendChild(header);
+            }
             
             users.forEach(user => {
-                const row = tbody.insertRow();
-                row.innerHTML = `
-                    <td><input type="text" value="${user.username}" id="username-${user.username}" style="width: 150px;"></td>
-                    <td><input type="password" value="${user.password}" id="password-${user.username}" style="width: 150px;"></td>
-                    <td>
-                        <button class="btn btn-primary" onclick="updateUser('${user.username}')">Speichern</button>
-                        <button class="btn btn-danger" onclick="deleteUser('${user.username}')">Löschen</button>
-                    </td>
-                `;
+                const userCard = document.createElement('div');
+                userCard.className = 'user-card';
+                
+                if (isMobile) {
+                    userCard.innerHTML = `
+                        <div class="user-card-header">
+                            <strong>${user.username}</strong>
+                        </div>
+                        <div class="user-inputs">
+                            <input type="text" value="${user.username}" id="username-${user.username}" placeholder="Benutzername">
+                            <input type="password" value="${user.password}" id="password-${user.username}" placeholder="Passwort">
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn btn-primary" onclick="updateUser('${user.username}')">Speichern</button>
+                            <button class="btn btn-danger" onclick="deleteUser('${user.username}')">Löschen</button>
+                        </div>
+                    `;
+                } else {
+                    userCard.innerHTML = `
+                        <div>
+                            <input type="text" value="${user.username}" id="username-${user.username}">
+                        </div>
+                        <div>
+                            <input type="password" value="${user.password}" id="password-${user.username}">
+                        </div>
+                        <div>
+                            <div class="btn-group">
+                                <button class="btn btn-primary" onclick="updateUser('${user.username}')">Speichern</button>
+                                <button class="btn btn-danger" onclick="deleteUser('${user.username}')">Löschen</button>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                container.appendChild(userCard);
             });
         }
 
@@ -412,12 +609,17 @@
             pins.forEach(pin => {
                 const card = document.createElement('div');
                 card.className = 'pin-card';
+                
+                const pinDate = new Date(pin.timestamp);
+                const isProtected = pinDate < new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
+                
                 card.innerHTML = `
                     <img src="${API_URL}/uploads/${pin.photo_filename}" alt="Pin">
                     <h4>${pin.username}</h4>
-                    <p>${new Date(pin.timestamp).toLocaleDateString('de-DE')}</p>
+                    <p>${pinDate.toLocaleDateString('de-DE')}</p>
                     <p>Lat: ${pin.latitude.toFixed(6)}</p>
                     <p>Lng: ${pin.longitude.toFixed(6)}</p>
+                    ${isProtected ? '<p style="color: #ffa500;">🔒 Geschützt</p>' : ''}
                     <button class="btn btn-danger" onclick="deletePin(${pin.id})">Löschen</button>
                 `;
                 grid.appendChild(card);
