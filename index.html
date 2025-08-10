@@ -37,6 +37,31 @@
             position: relative;
         }
 
+        /* Map Button in Top Right */
+        .map-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+            padding: 0.8rem 2rem;
+            font-size: 1rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            background: var(--secondary-gradient);
+            border: none;
+            border-radius: 50px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(240, 147, 251, 0.4);
+        }
+
+        .map-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(240, 147, 251, 0.6);
+        }
+
         /* Animated Background */
         .background-container {
             position: fixed;
@@ -354,10 +379,6 @@
             transform: none;
         }
 
-        #mapButton {
-            background: var(--secondary-gradient);
-        }
-
         /* Result Display */
         .result-overlay {
             position: fixed;
@@ -516,7 +537,7 @@
         .audio-status {
             position: fixed;
             top: 20px;
-            right: 20px;
+            left: 20px;
             background: var(--glass-bg);
             backdrop-filter: blur(10px);
             padding: 0.5rem 1rem;
@@ -600,6 +621,13 @@
                 font-size: 1rem;
             }
 
+            .map-button {
+                top: 10px;
+                right: 10px;
+                padding: 0.6rem 1.5rem;
+                font-size: 0.9rem;
+            }
+
             .audio-controls {
                 bottom: 10px;
                 left: 10px;
@@ -611,8 +639,8 @@
             }
 
             .audio-status {
-                top: 10px;
-                right: 10px;
+                top: 60px;
+                left: 10px;
                 font-size: 0.7rem;
             }
         }
@@ -708,6 +736,9 @@
     </style>
 </head>
 <body>
+    <!-- Map Button -->
+    <button class="map-button" id="mapButton">Zur Karte</button>
+
     <!-- Audio Elements - Simple HTML5 Audio -->
     <audio id="backgroundAudio" loop preload="auto">
         <source src="audios/background.mp3" type="audio/mpeg">
@@ -773,7 +804,6 @@
 
         <div class="control-panel">
             <button class="spin-button" id="spinBoth">Beide drehen!</button>
-            <button class="spin-button" id="mapButton">Zur Karte</button>
         </div>
     </div>
 
@@ -819,7 +849,7 @@
         let isMuted = true;
         let audioUnlocked = false;
         let isFirstUnmute = true;
-        let currentSpinType = 'both'; // 'both', 'number', or 'name'
+        let currentSpinType = 'both';
 
         // DOM Elements
         const numberWheel = document.getElementById('numberWheel');
@@ -843,14 +873,64 @@
         async function loadTextData() {
             try {
                 const response = await fetch('text.txt');
+                if (!response.ok) throw new Error('Failed to load text.txt');
                 const text = await response.text();
-                eval(text); // This will define names, shortNames, and phrases
+                
+                // Use Function constructor instead of eval for better error handling
+                const initData = new Function(text);
+                initData();
+                
+                console.log('Loaded names:', names.length);
+                console.log('Loaded shortNames:', shortNames.length);
+                console.log('Loaded phrases:', phrases.length);
             } catch (error) {
                 console.error('Error loading text data:', error);
-                // Fallback to some default values if file not found
-                names = ["Test User 1", "Test User 2"];
-                shortNames = ["Test 1", "Test 2"];
-                phrases = ["Herzlichen Glückwunsch!"];
+                // Fallback data
+                names = [
+                    "Ferdinand I (Reytschack)", 
+                    "Jonas von der Feuerwehr", 
+                    "Johannes B. Beeten", 
+                    "Enno aus Köln", 
+                    "Rolls Royce Robert", 
+                    "Ferdinand II (Henze)", 
+                    "Fréddé", 
+                    "Jakob II (Alberts)", 
+                    "Frisch", 
+                    "Ole", 
+                    "Kalle", 
+                    "Maxi", 
+                    "S.M. Max I", 
+                    "Leonard Wehrmeister", 
+                    "Michi von der Feuerwehr", 
+                    "Fabi der Schnelle",
+                    "Anselm",
+                    "Eicker",
+                    "Heinrich"
+                ];
+                
+                shortNames = [
+                    "Oberleutnant",
+                    "Leutnant",
+                    "Spieß",
+                    "Enno",
+                    "Robert",
+                    "Henze",
+                    "Fredde",
+                    "Jakob A.",
+                    "Seppel",
+                    "Jakob O.",
+                    "Kalle",
+                    "Maxi",
+                    "S.M. Max",
+                    "Lennart",
+                    "Michi",
+                    "Fabi",
+                    "Anselm",
+                    "Eicker",
+                    "Heinrich"
+                ];
+                
+                phrases = ["Herzlichen Glückwunsch!", "Wow, du bist so unglaublich talentiert."];
             }
         }
 
@@ -858,11 +938,9 @@
         function unlockAllAudio() {
             if (audioUnlocked) return;
             
-            // Show status
             audioStatus.textContent = 'Audio wird aktiviert...';
             audioStatus.classList.add('visible');
             
-            // Unlock all audio elements by playing them silently
             Object.values(audioElements).forEach(audio => {
                 audio.volume = 0;
                 const promise = audio.play();
@@ -885,7 +963,6 @@
             
             audioUnlocked = true;
             
-            // Update status
             setTimeout(() => {
                 audioStatus.textContent = 'Audio bereit';
                 setTimeout(() => {
@@ -973,18 +1050,15 @@
             setTimeout(() => pulse.remove(), 2000);
         }
 
-        // Toggle Audio - Fixed for first unmute
+        // Toggle Audio
         function toggleAudio() {
-            // Special handling for first unmute
             if (isFirstUnmute && isMuted) {
                 isFirstUnmute = false;
                 isMuted = false;
                 audioControls.classList.remove('muted');
                 
-                // Stop any playing audio immediately
                 stopAllAudio();
                 
-                // Small delay then start background music
                 setTimeout(() => {
                     if (!isMuted && audioUnlocked && !isSpinning) {
                         playAudio('background', true);
@@ -994,7 +1068,6 @@
                 return;
             }
             
-            // Normal toggle
             isMuted = !isMuted;
             audioControls.classList.toggle('muted', isMuted);
             
@@ -1007,37 +1080,32 @@
 
         // Single Wheel Spinning
         function spinSingleWheel(type) {
-            if (isSpinning) return;
+            if (isSpinning || names.length === 0) return;
 
             isSpinning = true;
             currentSpinType = type;
             spinButton.disabled = true;
             mapButton.disabled = true;
 
-            // Audio handling
             stopAudio('background');
             playAudio('spin');
             
-            // Start tension audio after spin sound
             setTimeout(() => {
                 if (isSpinning) {
                     playAudio('tension', true);
                 }
             }, 500);
 
-            // Add spinning class to appropriate wheel
             if (type === 'number') {
                 numberWheel.classList.add('spinning');
-                nameValue.textContent = '?'; // Reset other wheel
+                nameValue.textContent = '?';
             } else {
                 nameWheel.classList.add('spinning');
-                numberValue.textContent = '?'; // Reset other wheel
+                numberValue.textContent = '?';
             }
 
-            // Random spinning duration between 5-20 seconds
             const spinDuration = Math.random() * 15000 + 5000;
 
-            // Animate values during spin
             const valueInterval = setInterval(() => {
                 if (type === 'number') {
                     numberValue.textContent = Math.floor(Math.random() * 10) + 1;
@@ -1047,11 +1115,9 @@
                 }
             }, 100);
 
-            // Stop spinning
             setTimeout(() => {
                 clearInterval(valueInterval);
                 
-                // Final values
                 if (type === 'number') {
                     selectedNumber = Math.floor(Math.random() * 10) + 1;
                     numberValue.textContent = selectedNumber;
@@ -1063,10 +1129,8 @@
                     nameWheel.classList.remove('spinning');
                 }
                 
-                // Stop tension audio
                 stopAudio('tension');
                 
-                // Show result after a brief pause
                 setTimeout(() => {
                     showSingleResult(type);
                     isSpinning = false;
@@ -1078,43 +1142,36 @@
 
         // Spinning Logic for both wheels
         function spinBothWheels() {
-            if (isSpinning) return;
+            if (isSpinning || names.length === 0) return;
 
             isSpinning = true;
             currentSpinType = 'both';
             spinButton.disabled = true;
             mapButton.disabled = true;
 
-            // Audio handling
             stopAudio('background');
             playAudio('spin');
             
-            // Start tension audio after spin sound
             setTimeout(() => {
                 if (isSpinning) {
                     playAudio('tension', true);
                 }
             }, 500);
 
-            // Add spinning class
             numberWheel.classList.add('spinning');
             nameWheel.classList.add('spinning');
 
-            // Random spinning duration between 5-20 seconds
             const spinDuration = Math.random() * 15000 + 5000;
 
-            // Animate values during spin
             const valueInterval = setInterval(() => {
                 numberValue.textContent = Math.floor(Math.random() * 10) + 1;
                 const randomIndex = Math.floor(Math.random() * names.length);
                 nameValue.textContent = shortNames[randomIndex];
             }, 100);
 
-            // Stop spinning
             setTimeout(() => {
                 clearInterval(valueInterval);
                 
-                // Final values
                 selectedNumber = Math.floor(Math.random() * 10) + 1;
                 selectedIndex = Math.floor(Math.random() * names.length);
                 selectedName = names[selectedIndex];
@@ -1122,14 +1179,11 @@
                 numberValue.textContent = selectedNumber;
                 nameValue.textContent = shortNames[selectedIndex];
                 
-                // Remove spinning class
                 numberWheel.classList.remove('spinning');
                 nameWheel.classList.remove('spinning');
                 
-                // Stop tension audio
                 stopAudio('tension');
                 
-                // Show result after a brief pause
                 setTimeout(() => {
                     showResult();
                     isSpinning = false;
@@ -1151,18 +1205,15 @@
                 resultStrokes.style.display = 'none';
             }
             
-            resultPhrase.style.display = 'none'; // No phrase for single wheel
+            resultPhrase.style.display = 'none';
             
             resultOverlay.classList.add('active');
             createConfetti();
             
-            // Play applaud sound
             playAudio('applaud');
             
-            // Get applaud duration or use fallback
             const applaudDuration = audioElements.applaud.duration * 1000 || 5000;
             
-            // Auto-hide after applaud duration
             setTimeout(() => {
                 hideResult();
             }, applaudDuration);
@@ -1182,13 +1233,10 @@
             resultOverlay.classList.add('active');
             createConfetti();
             
-            // Play applaud sound
             playAudio('applaud');
             
-            // Get applaud duration or use fallback
             const applaudDuration = audioElements.applaud.duration * 1000 || 5000;
             
-            // Auto-hide after applaud duration
             setTimeout(() => {
                 hideResult();
             }, applaudDuration);
@@ -1199,7 +1247,6 @@
             clearConfetti();
             stopAudio('applaud');
             
-            // Resume background music
             if (!isMuted && audioUnlocked) {
                 playAudio('background', true);
             }
@@ -1263,34 +1310,28 @@
 
         // Initialize
         document.addEventListener('DOMContentLoaded', async () => {
-            // Load text data first
             await loadTextData();
             
-            // Show initial status
             audioStatus.textContent = 'Klicken Sie irgendwo, um Audio zu aktivieren';
             audioStatus.classList.add('visible');
             
             initializeEffects();
             
-            // Add wheel interactions
             addWheelInteractions(numberWheel);
             addWheelInteractions(nameWheel);
             
-            // Button listeners
             spinButton.addEventListener('click', spinBothWheels);
             mapButton.addEventListener('click', () => {
                 window.location.href = 'map.html';
             });
             audioControls.addEventListener('click', toggleAudio);
             
-            // Result overlay click handler
             resultOverlay.addEventListener('click', (e) => {
                 if (e.target === resultOverlay) {
                     hideResult();
                 }
             });
             
-            // Unlock audio on first user interaction
             const unlockHandler = () => {
                 unlockAllAudio();
                 document.removeEventListener('click', unlockHandler);
