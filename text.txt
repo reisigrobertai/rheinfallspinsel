@@ -1,4 +1,6 @@
-const names = [
+// Game data arrays
+
+names = [
     "Ferdinand I (Reytschack)", 
     "Jonas von der Feuerwehr", 
     "Johannes B. Beeten", 
@@ -20,7 +22,7 @@ const names = [
     "Heinrich"
 ];
 
-const shortNames = [
+shortNames = [
     "Oberleutnant",
     "Leutnant",
     "Spieß",
@@ -42,7 +44,7 @@ const shortNames = [
     "Heinrich"
 ];
 
-const phrases = [
+phrases = [
             "Wow, du bist so unglaublich talentiert.",
             "Herzlichen Glückwunsch! Deine Fähigkeit, alle anderen zu überraschen, ist wirklich beeindruckend.",
             "Bravo! Deine Leistung ist wirklich außergewöhnlich.",
