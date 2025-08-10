@@ -779,7 +779,7 @@
             <h2 class="result-title">GEWINNER!</h2>
             <div class="result-details">
                 <span class="result-name" id="resultName"></span>
-                <span class="result-strokes" id="resultStrokes"><span id="resultNumber"></span> Striche</span>
+                <span class="result-strokes" id="resultStrokes"></span>
             </div>
             <div class="result-phrase" id="resultPhrase"></div>
         </div>
@@ -825,6 +825,7 @@
         const spinButton = document.getElementById('spinBoth');
         const mapButton = document.getElementById('mapButton');
         const resultOverlay = document.getElementById('resultOverlay');
+        const resultTitle = document.querySelector('.result-title');
         const resultName = document.getElementById('resultName');
         const resultNumber = document.getElementById('resultNumber');
         const resultPhrase = document.getElementById('resultPhrase');
@@ -1064,7 +1065,7 @@
                 
                 // Show result after a brief pause
                 setTimeout(() => {
-                    showSingleResult(type);
+                    showResult();
                     isSpinning = false;
                     spinButton.disabled = false;
                     mapButton.disabled = false;
@@ -1135,49 +1136,36 @@
             }, spinDuration);
         }
 
-        // Result Display for single wheel
-        function showSingleResult(type) {
-    if (type === 'number') {
-        resultName.style.display = 'none';
-        resultStrokes.innerHTML = `${selectedNumber} Striche`;
-        resultStrokes.style.fontSize = 'clamp(1.8rem, 5vw, 3rem)';
-        resultPhrase.style.display = 'none';
-    } else {
-        resultName.textContent = selectedName;
-        resultName.style.display = 'block';
-        resultStrokes.style.display = 'none';
-        resultPhrase.textContent = phrases[Math.floor(Math.random() * phrases.length)];
-        resultPhrase.style.display = 'block';
-    }
-    
-    resultOverlay.classList.add('active');
-    createConfetti();
-    
-    // Play applaud sound
-    playAudio('applaud');
-    
-    // Get applaud duration or use fallback
-    const applaudDuration = audioElements.applaud.duration * 1000 || 5000;
-    
-    // Auto-hide after applaud duration
-    setTimeout(() => {
-        hideResult();
-    }, applaudDuration);
-}
-
-        // Result Display for both wheels
+        // Unified Result Display
         function showResult() {
-
-    document.querySelector('.result-title').textContent = 'GEWINNER!';
+            // Clear all elements first
+            resultTitle.textContent = 'GEWINNER!';
+            resultName.style.display = 'none';
+            resultStrokes.style.display = 'none';
+            resultPhrase.style.display = 'none';
             
-            resultName.textContent = selectedName;
-            resultName.style.display = 'block';
-            resultNumber.textContent = selectedNumber;
-            resultStrokes.innerHTML = `<span id="resultNumber">${selectedNumber}</span> Striche`;
-            resultStrokes.style.display = 'block';
-            resultStrokes.style.fontSize = '';
-            resultPhrase.textContent = phrases[Math.floor(Math.random() * phrases.length)];
-            resultPhrase.style.display = 'block';
+            // Configure based on spin type
+            if (currentSpinType === 'number') {
+                // Only show number
+                resultStrokes.innerHTML = `${selectedNumber} Striche`;
+                resultStrokes.style.display = 'block';
+                resultStrokes.style.fontSize = 'clamp(1.8rem, 5vw, 3rem)';
+            } else if (currentSpinType === 'name') {
+                // Show name and phrase
+                resultName.textContent = selectedName;
+                resultName.style.display = 'block';
+                resultPhrase.textContent = phrases[Math.floor(Math.random() * phrases.length)];
+                resultPhrase.style.display = 'block';
+            } else if (currentSpinType === 'both') {
+                // Show everything
+                resultName.textContent = selectedName;
+                resultName.style.display = 'block';
+                resultStrokes.innerHTML = `${selectedNumber} Striche`;
+                resultStrokes.style.display = 'block';
+                resultStrokes.style.fontSize = '';
+                resultPhrase.textContent = phrases[Math.floor(Math.random() * phrases.length)];
+                resultPhrase.style.display = 'block';
+            }
             
             resultOverlay.classList.add('active');
             createConfetti();
