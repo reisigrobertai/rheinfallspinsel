@@ -37,31 +37,6 @@
             position: relative;
         }
 
-        /* Map Button in Top Right */
-        .map-button {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 100;
-            padding: 0.8rem 2rem;
-            font-size: 1rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            background: var(--secondary-gradient);
-            border: none;
-            border-radius: 50px;
-            color: white;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(240, 147, 251, 0.4);
-        }
-
-        .map-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(240, 147, 251, 0.6);
-        }
-
         /* Animated Background */
         .background-container {
             position: fixed;
@@ -147,7 +122,6 @@
             align-items: center;
             justify-content: center;
             padding: 20px;
-            padding-top: 100px;
         }
 
         /* Title */
@@ -737,8 +711,6 @@
     </style>
 </head>
 <body>
-    <!-- Map Button -->
-    <button class="map-button" id="mapButton">Zur Karte</button>
 
     <!-- Audio Elements - Simple HTML5 Audio -->
     <audio id="backgroundAudio" loop preload="auto">
@@ -805,6 +777,7 @@
 
         <div class="control-panel">
             <button class="spin-button" id="spinBoth">Beide drehen!</button>
+            <button class="spin-button" id="mapButton" style="background: var(--secondary-gradient);">Zur Karte</button>
         </div>
     </div>
 
