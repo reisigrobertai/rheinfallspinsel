@@ -86,19 +86,23 @@
             border: 2px solid white;
             box-shadow: 0 2px 10px rgba(0,0,0,0.3);
             position: relative;
+            cursor: pointer;
         }
 
-        .custom-marker-inner {
+        /* Hover image */
+        .hover-image {
             position: absolute;
-            width: 20px;
-            height: 20px;
+            width: 150px;
+            height: 150px;
             background-size: cover;
             background-position: center;
-            border-radius: 50%;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) rotate(45deg);
-            border: 2px solid white;
+            border: 3px solid white;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+            z-index: 1000;
+            pointer-events: none;
+            display: none;
+            transform: translate(-50%, -100%) translateY(-20px);
         }
 
         .back-button {
@@ -272,6 +276,11 @@
                 margin-top: 10px !important;
                 margin-left: 10px !important;
             }
+
+            .hover-image {
+                width: 100px;
+                height: 100px;
+            }
         }
     </style>
 </head>
@@ -279,6 +288,7 @@
     <button class="back-button" onclick="window.location.href='index.html'">Zurück</button>
     
     <div id="map"></div>
+    <div id="hoverImage" class="hover-image"></div>
 
     <!-- Authentication Modal -->
     <div id="authModal" class="modal">
@@ -288,7 +298,7 @@
                 <div class="form-group">
                     <label>Benutzername</label>
                     <select id="username" required>
-                        <option value="">Wähle deinen Namen...</option>
+                        <option value="">Benutzer auswählen</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -322,6 +332,7 @@
         let shortNames = [];
         let currentUsername = null;
         let markers = [];
+        let hoverImage = null;
 
         // Initialize map
         function initMap() {
@@ -333,6 +344,9 @@
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 maxZoom: 19
             }).addTo(map);
+
+            // Get hover image element
+            hoverImage = document.getElementById('hoverImage');
 
             // Add click handler
             map.on('click', onMapClick);
@@ -357,12 +371,23 @@
                 
                 // Populate username dropdown with placeholder
                 const select = document.getElementById('username');
-                select.innerHTML = '<option value="">Wähle deinen Namen...</option>';
+                select.innerHTML = '<option value="">Benutzer auswählen</option>';
                 shortNames.forEach(name => {
                     const option = document.createElement('option');
                     option.value = name;
                     option.textContent = name;
                     select.appendChild(option);
+                });
+
+                // Handle dropdown change to remove placeholder
+                select.addEventListener('change', function() {
+                    if (this.value !== '') {
+                        // Remove the placeholder option
+                        const placeholder = this.querySelector('option[value=""]');
+                        if (placeholder) {
+                            placeholder.remove();
+                        }
+                    }
                 });
             } catch (error) {
                 console.error('Error loading usernames:', error);
@@ -370,15 +395,9 @@
         }
 
         // Create custom marker
-        function createCustomMarker(pin, showImage) {
-            const iconHtml = showImage 
-                ? `<div class="custom-marker">
-                     <div class="custom-marker-inner" style="background-image: url('${API_URL}/uploads/${pin.photo_filename}')"></div>
-                   </div>`
-                : `<div class="custom-marker"></div>`;
-
+        function createCustomMarker(pin) {
             const customIcon = L.divIcon({
-                html: iconHtml,
+                html: '<div class="custom-marker"></div>',
                 className: 'custom-div-icon',
                 iconSize: [30, 30],
                 iconAnchor: [15, 30],
@@ -394,13 +413,31 @@
             const bounds = map.getBounds();
             const distance = bounds.getNorthEast().distanceTo(bounds.getSouthWest());
             
-            // Show images only when map shows less than 1km
-            const showImages = distance < 1000;
+            // Show hover functionality only when map shows less than 1km
+            const enableHover = distance < 1000;
             
             markers.forEach((marker, index) => {
                 const pin = pins[index];
-                const newIcon = createCustomMarker(pin, showImages);
-                marker.setIcon(newIcon);
+                
+                if (enableHover) {
+                    // Add mouse events
+                    marker.on('mouseover', function(e) {
+                        const pos = map.latLngToContainerPoint(e.latlng);
+                        hoverImage.style.backgroundImage = `url('${API_URL}/uploads/${pin.photo_filename}')`;
+                        hoverImage.style.left = pos.x + 'px';
+                        hoverImage.style.top = pos.y + 'px';
+                        hoverImage.style.display = 'block';
+                    });
+                    
+                    marker.on('mouseout', function() {
+                        hoverImage.style.display = 'none';
+                    });
+                } else {
+                    // Remove mouse events
+                    marker.off('mouseover');
+                    marker.off('mouseout');
+                    hoverImage.style.display = 'none';
+                }
             });
         }
 
@@ -428,7 +465,7 @@
 
             pins.forEach(pin => {
                 const marker = L.marker([pin.latitude, pin.longitude], {
-                    icon: createCustomMarker(pin, false)
+                    icon: createCustomMarker(pin)
                 }).addTo(map);
                 
                 const popupContent = `
@@ -461,6 +498,16 @@
             document.getElementById('authForm').reset();
             document.getElementById('errorMessage').style.display = 'none';
             clickedLocation = null;
+            
+            // Re-add placeholder option
+            const select = document.getElementById('username');
+            if (!select.querySelector('option[value=""]')) {
+                const placeholder = document.createElement('option');
+                placeholder.value = '';
+                placeholder.textContent = 'Benutzer auswählen';
+                select.insertBefore(placeholder, select.firstChild);
+                select.value = '';
+            }
         }
 
         // Handle form submission
