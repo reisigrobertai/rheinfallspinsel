@@ -1138,34 +1138,32 @@
         // Result Display for single wheel
         function showSingleResult(type) {
     if (type === 'number') {
-        // Add this line to change the title
-        document.querySelector('.result-title').textContent = selectedNumber;
-        
         resultName.style.display = 'none';
         resultStrokes.innerHTML = `${selectedNumber} Striche`;
         resultStrokes.style.fontSize = 'clamp(1.8rem, 5vw, 3rem)';
+        resultPhrase.style.display = 'none';
     } else {
-                resultName.textContent = selectedName;
-                resultName.style.display = 'block';
-                resultStrokes.style.display = 'none';
-            }
-            
-            resultPhrase.style.display = 'none'; // No phrase for single wheel
-            
-            resultOverlay.classList.add('active');
-            createConfetti();
-            
-            // Play applaud sound
-            playAudio('applaud');
-            
-            // Get applaud duration or use fallback
-            const applaudDuration = audioElements.applaud.duration * 1000 || 5000;
-            
-            // Auto-hide after applaud duration
-            setTimeout(() => {
-                hideResult();
-            }, applaudDuration);
-        }
+        resultName.textContent = selectedName;
+        resultName.style.display = 'block';
+        resultStrokes.style.display = 'none';
+        resultPhrase.textContent = phrases[Math.floor(Math.random() * phrases.length)];
+        resultPhrase.style.display = 'block';
+    }
+    
+    resultOverlay.classList.add('active');
+    createConfetti();
+    
+    // Play applaud sound
+    playAudio('applaud');
+    
+    // Get applaud duration or use fallback
+    const applaudDuration = audioElements.applaud.duration * 1000 || 5000;
+    
+    // Auto-hide after applaud duration
+    setTimeout(() => {
+        hideResult();
+    }, applaudDuration);
+}
 
         // Result Display for both wheels
         function showResult() {
