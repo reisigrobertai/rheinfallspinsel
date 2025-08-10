@@ -27,6 +27,11 @@
             z-index: 1;
         }
 
+        /* Hide Leaflet attribution */
+        .leaflet-control-attribution {
+            display: none !important;
+        }
+
         /* Custom Leaflet Controls Styling */
         .leaflet-control-zoom {
             margin-top: 20px !important;
@@ -69,12 +74,6 @@
         .leaflet-bar a:last-child {
             border-bottom-left-radius: 10px !important;
             border-bottom-right-radius: 10px !important;
-        }
-
-        .leaflet-control-attribution {
-            background: rgba(26, 26, 46, 0.8) !important;
-            color: rgba(255, 255, 255, 0.6) !important;
-            backdrop-filter: blur(10px) !important;
         }
 
         /* Custom marker style */
@@ -289,7 +288,7 @@
                 <div class="form-group">
                     <label>Benutzername</label>
                     <select id="username" required>
-                        <!-- Options will be populated dynamically -->
+                        <option value="">Wähle deinen Namen...</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -313,10 +312,8 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.3/dist/heic2any.min.js"></script>
     <script>
-        // API Configuration - Use HTTP for local testing
-        const API_URL = window.location.hostname === 'localhost' 
-            ? 'http://localhost:8000'
-            : 'https://gluecksrad-backend.rheinfallspinsel.de';
+        // API Configuration
+        const API_URL = 'https://gluecksrad-backend.rheinfallspinsel.de';
         
         // Global variables
         let map;
@@ -329,10 +326,11 @@
         // Initialize map
         function initMap() {
             // Initialize at specified coordinates
-            map = L.map('map').setView([51.198084, 6.692971], 13);
+            map = L.map('map', {
+                attributionControl: false
+            }).setView([51.198084, 6.692971], 13);
             
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors',
                 maxZoom: 19
             }).addTo(map);
 
@@ -357,14 +355,13 @@
                 
                 console.log('Loaded shortNames:', shortNames);
                 
-                // Populate username dropdown without placeholder
+                // Populate username dropdown with placeholder
                 const select = document.getElementById('username');
-                select.innerHTML = '';
-                shortNames.forEach((name, index) => {
+                select.innerHTML = '<option value="">Wähle deinen Namen...</option>';
+                shortNames.forEach(name => {
                     const option = document.createElement('option');
                     option.value = name;
                     option.textContent = name;
-                    if (index === 0) option.selected = true;
                     select.appendChild(option);
                 });
             } catch (error) {
@@ -474,7 +471,10 @@
             const password = document.getElementById('password').value;
             const photoFile = document.getElementById('photo').files[0];
             
-            if (!clickedLocation || !photoFile) return;
+            if (!clickedLocation || !photoFile || !username) {
+                showError('Bitte alle Felder ausfüllen');
+                return;
+            }
             
             currentUsername = username;
             
