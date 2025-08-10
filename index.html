@@ -870,69 +870,19 @@
         const audioStatus = document.getElementById('audioStatus');
 
         // Load text data
-        async function loadTextData() {
-            try {
-                const response = await fetch('text.txt');
-                if (!response.ok) throw new Error('Failed to load text.txt');
-                const text = await response.text();
-                
-                // Use Function constructor instead of eval for better error handling
-                const initData = new Function(text);
-                initData();
-                
-                console.log('Loaded names:', names.length);
-                console.log('Loaded shortNames:', shortNames.length);
-                console.log('Loaded phrases:', phrases.length);
-            } catch (error) {
-                console.error('Error loading text data:', error);
-                // Fallback data
-                names = [
-                    "Ferdinand I (Reytschack)", 
-                    "Jonas von der Feuerwehr", 
-                    "Johannes B. Beeten", 
-                    "Enno aus Köln", 
-                    "Rolls Royce Robert", 
-                    "Ferdinand II (Henze)", 
-                    "Fréddé", 
-                    "Jakob II (Alberts)", 
-                    "Frisch", 
-                    "Ole", 
-                    "Kalle", 
-                    "Maxi", 
-                    "S.M. Max I", 
-                    "Leonard Wehrmeister", 
-                    "Michi von der Feuerwehr", 
-                    "Fabi der Schnelle",
-                    "Anselm",
-                    "Eicker",
-                    "Heinrich"
-                ];
-                
-                shortNames = [
-                    "Oberleutnant",
-                    "Leutnant",
-                    "Spieß",
-                    "Enno",
-                    "Robert",
-                    "Henze",
-                    "Fredde",
-                    "Jakob A.",
-                    "Seppel",
-                    "Jakob O.",
-                    "Kalle",
-                    "Maxi",
-                    "S.M. Max",
-                    "Lennart",
-                    "Michi",
-                    "Fabi",
-                    "Anselm",
-                    "Eicker",
-                    "Heinrich"
-                ];
-                
-                phrases = ["Herzlichen Glückwunsch!", "Wow, du bist so unglaublich talentiert."];
-            }
-        }
+async function loadTextData() {
+    try {
+        const response = await fetch('text.txt');
+        const text = await response.text();
+        eval(text);
+        
+        console.log('Loaded names:', names.length);
+        console.log('Loaded shortNames:', shortNames.length);
+        console.log('Loaded phrases:', phrases.length);
+    } catch (error) {
+        console.error('Error loading text data:', error);
+    }
+}
 
         // Audio Functions
         function unlockAllAudio() {
