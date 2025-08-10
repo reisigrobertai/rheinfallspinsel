@@ -89,20 +89,20 @@
             cursor: pointer;
         }
 
-        /* Hover image */
-        .hover-image {
+        /* Pin photo overlay */
+        .pin-photo {
             position: absolute;
-            width: 150px;
-            height: 150px;
+            width: 60px;
+            height: 60px;
             background-size: cover;
             background-position: center;
             border: 3px solid white;
-            border-radius: 10px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
-            z-index: 1000;
-            pointer-events: none;
-            display: none;
-            transform: translate(-50%, -100%) translateY(-20px);
+            border-radius: 8px;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.4);
+            transform: translate(-50%, -100%) translateY(-10px);
+            left: 50%;
+            top: 0;
+            cursor: pointer;
         }
 
         .back-button {
@@ -277,9 +277,9 @@
                 margin-left: 10px !important;
             }
 
-            .hover-image {
-                width: 100px;
-                height: 100px;
+            .pin-photo {
+                width: 50px;
+                height: 50px;
             }
         }
     </style>
@@ -288,7 +288,6 @@
     <button class="back-button" onclick="window.location.href='index.html'">Zurück</button>
     
     <div id="map"></div>
-    <div id="hoverImage" class="hover-image"></div>
 
     <!-- Authentication Modal -->
     <div id="authModal" class="modal">
@@ -332,7 +331,8 @@
         let shortNames = [];
         let currentUsername = null;
         let markers = [];
-        let hoverImage = null;
+        let currentOpenPopup = null;
+        let showPhotos = false;
 
         // Initialize map
         function initMap() {
@@ -345,14 +345,17 @@
                 maxZoom: 19
             }).addTo(map);
 
-            // Get hover image element
-            hoverImage = document.getElementById('hoverImage');
-
             // Add click handler
             map.on('click', onMapClick);
             
             // Add zoom change handler
             map.on('zoomend', updateMarkerVisibility);
+            
+            // Add popup close handler
+            map.on('popupclose', function() {
+                currentOpenPopup = null;
+                updateMarkerVisibility();
+            });
 
             // Load existing pins
             loadPins();
@@ -394,10 +397,23 @@
             }
         }
 
-        // Create custom marker
-        function createCustomMarker(pin) {
+        // Create custom marker with or without photo
+        function createCustomMarker(pin, showPhoto) {
+            let iconHtml;
+            
+            if (showPhoto && !currentOpenPopup) {
+                iconHtml = `
+                    <div style="position: relative;">
+                        <div class="pin-photo" style="background-image: url('${API_URL}/uploads/${pin.photo_filename}')"></div>
+                        <div class="custom-marker"></div>
+                    </div>
+                `;
+            } else {
+                iconHtml = '<div class="custom-marker"></div>';
+            }
+
             const customIcon = L.divIcon({
-                html: '<div class="custom-marker"></div>',
+                html: iconHtml,
                 className: 'custom-div-icon',
                 iconSize: [30, 30],
                 iconAnchor: [15, 30],
@@ -413,31 +429,13 @@
             const bounds = map.getBounds();
             const distance = bounds.getNorthEast().distanceTo(bounds.getSouthWest());
             
-            // Show hover functionality only when map shows less than 1km
-            const enableHover = distance < 1000;
+            // Show photos when map shows less than 1km
+            showPhotos = distance < 1000;
             
             markers.forEach((marker, index) => {
                 const pin = pins[index];
-                
-                if (enableHover) {
-                    // Add mouse events
-                    marker.on('mouseover', function(e) {
-                        const pos = map.latLngToContainerPoint(e.latlng);
-                        hoverImage.style.backgroundImage = `url('${API_URL}/uploads/${pin.photo_filename}')`;
-                        hoverImage.style.left = pos.x + 'px';
-                        hoverImage.style.top = pos.y + 'px';
-                        hoverImage.style.display = 'block';
-                    });
-                    
-                    marker.on('mouseout', function() {
-                        hoverImage.style.display = 'none';
-                    });
-                } else {
-                    // Remove mouse events
-                    marker.off('mouseover');
-                    marker.off('mouseout');
-                    hoverImage.style.display = 'none';
-                }
+                const newIcon = createCustomMarker(pin, showPhotos);
+                marker.setIcon(newIcon);
             });
         }
 
@@ -465,7 +463,7 @@
 
             pins.forEach(pin => {
                 const marker = L.marker([pin.latitude, pin.longitude], {
-                    icon: createCustomMarker(pin)
+                    icon: createCustomMarker(pin, false)
                 }).addTo(map);
                 
                 const popupContent = `
@@ -479,6 +477,18 @@
                 `;
                 
                 marker.bindPopup(popupContent);
+                
+                // Add popup open handler
+                marker.on('popupopen', function() {
+                    currentOpenPopup = marker;
+                    // Hide all photos when popup is open
+                    markers.forEach((m, idx) => {
+                        const p = pins[idx];
+                        const icon = createCustomMarker(p, false);
+                        m.setIcon(icon);
+                    });
+                });
+                
                 markers.push(marker);
             });
             
