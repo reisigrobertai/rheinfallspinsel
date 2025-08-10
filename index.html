@@ -1137,11 +1137,14 @@
 
         // Result Display for single wheel
         function showSingleResult(type) {
-            if (type === 'number') {
-                resultName.style.display = 'none';
-                resultStrokes.innerHTML = `${selectedNumber} Striche`;
-                resultStrokes.style.fontSize = 'clamp(1.8rem, 5vw, 3rem)';
-            } else {
+    if (type === 'number') {
+        // Add this line to change the title
+        document.querySelector('.result-title').textContent = selectedNumber;
+        
+        resultName.style.display = 'none';
+        resultStrokes.innerHTML = `${selectedNumber} Striche`;
+        resultStrokes.style.fontSize = 'clamp(1.8rem, 5vw, 3rem)';
+    } else {
                 resultName.textContent = selectedName;
                 resultName.style.display = 'block';
                 resultStrokes.style.display = 'none';
@@ -1166,6 +1169,9 @@
 
         // Result Display for both wheels
         function showResult() {
+
+    document.querySelector('.result-title').textContent = 'GEWINNER!';
+            
             resultName.textContent = selectedName;
             resultName.style.display = 'block';
             resultNumber.textContent = selectedNumber;
