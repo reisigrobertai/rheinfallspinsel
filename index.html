@@ -596,13 +596,6 @@
                 font-size: 1rem;
             }
 
-            .map-button {
-                top: 10px;
-                right: 10px;
-                padding: 0.6rem 1.5rem;
-                font-size: 0.9rem;
-            }
-
             .audio-controls {
                 bottom: 10px;
                 left: 10px;
@@ -614,7 +607,7 @@
             }
 
             .audio-status {
-                top: 60px;
+                top: 10px;
                 left: 10px;
                 font-size: 0.7rem;
             }
@@ -711,7 +704,6 @@
     </style>
 </head>
 <body>
-
     <!-- Audio Elements - Simple HTML5 Audio -->
     <audio id="backgroundAudio" loop preload="auto">
         <source src="audios/background.mp3" type="audio/mpeg">
@@ -823,7 +815,7 @@
         let isMuted = true;
         let audioUnlocked = false;
         let isFirstUnmute = true;
-        let currentSpinType = 'both';
+        let currentSpinType = 'both'; // 'both', 'number', or 'name'
 
         // DOM Elements
         const numberWheel = document.getElementById('numberWheel');
@@ -844,27 +836,29 @@
         const audioStatus = document.getElementById('audioStatus');
 
         // Load text data
-async function loadTextData() {
-    try {
-        const response = await fetch('text.txt');
-        const text = await response.text();
-        eval(text);
-        
-        console.log('Loaded names:', names.length);
-        console.log('Loaded shortNames:', shortNames.length);
-        console.log('Loaded phrases:', phrases.length);
-    } catch (error) {
-        console.error('Error loading text data:', error);
-    }
-}
+        async function loadTextData() {
+            try {
+                const response = await fetch('text.txt');
+                const text = await response.text();
+                eval(text);
+                
+                console.log('Loaded names:', names.length);
+                console.log('Loaded shortNames:', shortNames.length);
+                console.log('Loaded phrases:', phrases.length);
+            } catch (error) {
+                console.error('Error loading text data:', error);
+            }
+        }
 
         // Audio Functions
         function unlockAllAudio() {
             if (audioUnlocked) return;
             
+            // Show status
             audioStatus.textContent = 'Audio wird aktiviert...';
             audioStatus.classList.add('visible');
             
+            // Unlock all audio elements by playing them silently
             Object.values(audioElements).forEach(audio => {
                 audio.volume = 0;
                 const promise = audio.play();
@@ -887,6 +881,7 @@ async function loadTextData() {
             
             audioUnlocked = true;
             
+            // Update status
             setTimeout(() => {
                 audioStatus.textContent = 'Audio bereit';
                 setTimeout(() => {
@@ -974,15 +969,18 @@ async function loadTextData() {
             setTimeout(() => pulse.remove(), 2000);
         }
 
-        // Toggle Audio
+        // Toggle Audio - Fixed for first unmute
         function toggleAudio() {
+            // Special handling for first unmute
             if (isFirstUnmute && isMuted) {
                 isFirstUnmute = false;
                 isMuted = false;
                 audioControls.classList.remove('muted');
                 
+                // Stop any playing audio immediately
                 stopAllAudio();
                 
+                // Small delay then start background music
                 setTimeout(() => {
                     if (!isMuted && audioUnlocked && !isSpinning) {
                         playAudio('background', true);
@@ -992,6 +990,7 @@ async function loadTextData() {
                 return;
             }
             
+            // Normal toggle
             isMuted = !isMuted;
             audioControls.classList.toggle('muted', isMuted);
             
@@ -1011,25 +1010,30 @@ async function loadTextData() {
             spinButton.disabled = true;
             mapButton.disabled = true;
 
+            // Audio handling
             stopAudio('background');
             playAudio('spin');
             
+            // Start tension audio after spin sound
             setTimeout(() => {
                 if (isSpinning) {
                     playAudio('tension', true);
                 }
             }, 500);
 
+            // Add spinning class to appropriate wheel
             if (type === 'number') {
                 numberWheel.classList.add('spinning');
-                nameValue.textContent = '?';
+                nameValue.textContent = '?'; // Reset other wheel
             } else {
                 nameWheel.classList.add('spinning');
-                numberValue.textContent = '?';
+                numberValue.textContent = '?'; // Reset other wheel
             }
 
+            // Random spinning duration between 5-20 seconds
             const spinDuration = Math.random() * 15000 + 5000;
 
+            // Animate values during spin
             const valueInterval = setInterval(() => {
                 if (type === 'number') {
                     numberValue.textContent = Math.floor(Math.random() * 10) + 1;
@@ -1039,9 +1043,11 @@ async function loadTextData() {
                 }
             }, 100);
 
+            // Stop spinning
             setTimeout(() => {
                 clearInterval(valueInterval);
                 
+                // Final values
                 if (type === 'number') {
                     selectedNumber = Math.floor(Math.random() * 10) + 1;
                     numberValue.textContent = selectedNumber;
@@ -1053,8 +1059,10 @@ async function loadTextData() {
                     nameWheel.classList.remove('spinning');
                 }
                 
+                // Stop tension audio
                 stopAudio('tension');
                 
+                // Show result after a brief pause
                 setTimeout(() => {
                     showSingleResult(type);
                     isSpinning = false;
@@ -1073,29 +1081,36 @@ async function loadTextData() {
             spinButton.disabled = true;
             mapButton.disabled = true;
 
+            // Audio handling
             stopAudio('background');
             playAudio('spin');
             
+            // Start tension audio after spin sound
             setTimeout(() => {
                 if (isSpinning) {
                     playAudio('tension', true);
                 }
             }, 500);
 
+            // Add spinning class
             numberWheel.classList.add('spinning');
             nameWheel.classList.add('spinning');
 
+            // Random spinning duration between 5-20 seconds
             const spinDuration = Math.random() * 15000 + 5000;
 
+            // Animate values during spin
             const valueInterval = setInterval(() => {
                 numberValue.textContent = Math.floor(Math.random() * 10) + 1;
                 const randomIndex = Math.floor(Math.random() * names.length);
                 nameValue.textContent = shortNames[randomIndex];
             }, 100);
 
+            // Stop spinning
             setTimeout(() => {
                 clearInterval(valueInterval);
                 
+                // Final values
                 selectedNumber = Math.floor(Math.random() * 10) + 1;
                 selectedIndex = Math.floor(Math.random() * names.length);
                 selectedName = names[selectedIndex];
@@ -1103,11 +1118,14 @@ async function loadTextData() {
                 numberValue.textContent = selectedNumber;
                 nameValue.textContent = shortNames[selectedIndex];
                 
+                // Remove spinning class
                 numberWheel.classList.remove('spinning');
                 nameWheel.classList.remove('spinning');
                 
+                // Stop tension audio
                 stopAudio('tension');
                 
+                // Show result after a brief pause
                 setTimeout(() => {
                     showResult();
                     isSpinning = false;
@@ -1129,15 +1147,18 @@ async function loadTextData() {
                 resultStrokes.style.display = 'none';
             }
             
-            resultPhrase.style.display = 'none';
+            resultPhrase.style.display = 'none'; // No phrase for single wheel
             
             resultOverlay.classList.add('active');
             createConfetti();
             
+            // Play applaud sound
             playAudio('applaud');
             
+            // Get applaud duration or use fallback
             const applaudDuration = audioElements.applaud.duration * 1000 || 5000;
             
+            // Auto-hide after applaud duration
             setTimeout(() => {
                 hideResult();
             }, applaudDuration);
@@ -1157,10 +1178,13 @@ async function loadTextData() {
             resultOverlay.classList.add('active');
             createConfetti();
             
+            // Play applaud sound
             playAudio('applaud');
             
+            // Get applaud duration or use fallback
             const applaudDuration = audioElements.applaud.duration * 1000 || 5000;
             
+            // Auto-hide after applaud duration
             setTimeout(() => {
                 hideResult();
             }, applaudDuration);
@@ -1171,6 +1195,7 @@ async function loadTextData() {
             clearConfetti();
             stopAudio('applaud');
             
+            // Resume background music
             if (!isMuted && audioUnlocked) {
                 playAudio('background', true);
             }
@@ -1234,28 +1259,34 @@ async function loadTextData() {
 
         // Initialize
         document.addEventListener('DOMContentLoaded', async () => {
+            // Load text data first
             await loadTextData();
             
+            // Show initial status
             audioStatus.textContent = 'Klicken Sie irgendwo, um Audio zu aktivieren';
             audioStatus.classList.add('visible');
             
             initializeEffects();
             
+            // Add wheel interactions
             addWheelInteractions(numberWheel);
             addWheelInteractions(nameWheel);
             
+            // Button listeners
             spinButton.addEventListener('click', spinBothWheels);
             mapButton.addEventListener('click', () => {
                 window.location.href = 'map.html';
             });
             audioControls.addEventListener('click', toggleAudio);
             
+            // Result overlay click handler
             resultOverlay.addEventListener('click', (e) => {
                 if (e.target === resultOverlay) {
                     hideResult();
                 }
             });
             
+            // Unlock audio on first user interaction
             const unlockHandler = () => {
                 unlockAllAudio();
                 document.removeEventListener('click', unlockHandler);
