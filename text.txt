@@ -1,5 +1,3 @@
-// Game data arrays
-
 names = [
     "Ferdinand I (Reytschack)", 
     "Jonas von der Feuerwehr", 
