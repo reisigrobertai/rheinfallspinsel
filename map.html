@@ -264,6 +264,13 @@
             margin-top: 10px;
         }
 
+        .protected-notice {
+            font-size: 12px;
+            color: #999;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
         @media (max-width: 768px) {
             .back-button {
                 top: 10px;
@@ -328,7 +335,7 @@
         let map;
         let clickedLocation = null;
         let pins = [];
-        let shortNames = [];
+        let users = [];
         let currentUsername = null;
         let markers = [];
         let currentOpenPopup = null;
@@ -357,43 +364,44 @@
                 updateMarkerVisibility();
             });
 
-            // Load existing pins
+            // Load users and pins
+            loadUsers();
             loadPins();
         }
 
-        // Load usernames from text.txt
-        async function loadUsernames() {
+        // Load users from server
+        async function loadUsers() {
             try {
-                const response = await fetch('text.txt');
-                const text = await response.text();
-                
-                // Execute the text file to get the arrays
-                eval(text);
-                
-                console.log('Loaded shortNames:', shortNames);
-                
-                // Populate username dropdown with placeholder
-                const select = document.getElementById('username');
-                select.innerHTML = '<option value="">Benutzer auswählen</option>';
-                shortNames.forEach(name => {
-                    const option = document.createElement('option');
-                    option.value = name;
-                    option.textContent = name;
-                    select.appendChild(option);
-                });
+                const response = await fetch(`${API_URL}/api/users`);
+                if (response.ok) {
+                    users = await response.json();
+                    console.log('Loaded users:', users);
+                    
+                    // Populate username dropdown
+                    const select = document.getElementById('username');
+                    select.innerHTML = '<option value="">Benutzer auswählen</option>';
+                    users.forEach(user => {
+                        const option = document.createElement('option');
+                        option.value = user.username;
+                        option.textContent = user.username;
+                        select.appendChild(option);
+                    });
 
-                // Handle dropdown change to remove placeholder
-                select.addEventListener('change', function() {
-                    if (this.value !== '') {
-                        // Remove the placeholder option
-                        const placeholder = this.querySelector('option[value=""]');
-                        if (placeholder) {
-                            placeholder.remove();
+                    // Handle dropdown change to remove placeholder
+                    select.addEventListener('change', function() {
+                        if (this.value !== '') {
+                            // Remove the placeholder option
+                            const placeholder = this.querySelector('option[value=""]');
+                            if (placeholder) {
+                                placeholder.remove();
+                            }
                         }
-                    }
-                });
+                    });
+                } else {
+                    console.error('Failed to load users:', response.status);
+                }
             } catch (error) {
-                console.error('Error loading usernames:', error);
+                console.error('Error loading users:', error);
             }
         }
 
@@ -421,6 +429,14 @@
             });
 
             return customIcon;
+        }
+
+        // Check if pin is protected (older than 2 weeks)
+        function isPinProtected(pin) {
+            const pinDate = new Date(pin.timestamp);
+            const twoWeeksAgo = new Date();
+            twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+            return pinDate < twoWeeksAgo;
         }
 
         // Update marker visibility based on zoom
@@ -466,13 +482,18 @@
                     icon: createCustomMarker(pin, false)
                 }).addTo(map);
                 
+                const isProtected = isPinProtected(pin);
+                const canDelete = currentUsername === pin.username && !isProtected;
+                
                 const popupContent = `
                     <div class="pin-popup">
                         <img src="${API_URL}/uploads/${pin.photo_filename}" alt="Pin photo">
                         <h3>${pin.username}</h3>
                         <p>Hinzugefügt: ${new Date(pin.timestamp).toLocaleDateString('de-DE')}</p>
-                        ${currentUsername === pin.username ? 
-                            `<button class="delete-btn" onclick="deletePin(${pin.id})">Löschen</button>` : ''}
+                        ${canDelete ? 
+                            `<button class="delete-btn" onclick="deletePin(${pin.id})">Löschen</button>` : 
+                            (currentUsername === pin.username && isProtected ? 
+                                '<p class="protected-notice">Geschützt (älter als 2 Wochen)</p>' : '')}
                     </div>
                 `;
                 
@@ -642,7 +663,8 @@
                 if (response.ok) {
                     loadPins(); // Reload pins
                 } else {
-                    alert('Fehler beim Löschen des Pins');
+                    const errorData = await response.json();
+                    alert(errorData.detail || 'Fehler beim Löschen des Pins');
                 }
             } catch (error) {
                 console.error('Delete error:', error);
@@ -660,7 +682,6 @@
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             initMap();
-            loadUsernames();
         });
 
         // Close modal on outside click
