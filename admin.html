@@ -132,6 +132,11 @@
             color: white;
         }
 
+        .btn-warning {
+            background: #ffa500;
+            color: white;
+        }
+
         .btn:hover {
             transform: translateY(-2px);
             opacity: 0.9;
@@ -215,6 +220,97 @@
             z-index: 100;
         }
 
+        /* File Manager Styles */
+        .file-manager {
+            margin-top: 20px;
+        }
+
+        .file-manager-section {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .file-manager-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .file-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+            font-size: 13px;
+        }
+
+        .file-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .file-name {
+            font-weight: 500;
+            margin-bottom: 2px;
+            word-break: break-all;
+        }
+
+        .file-details {
+            color: #999;
+            font-size: 11px;
+        }
+
+        .file-actions {
+            display: flex;
+            gap: 5px;
+            margin-left: 10px;
+        }
+
+        .file-actions .btn {
+            padding: 4px 8px;
+            font-size: 11px;
+            min-width: auto;
+        }
+
+        .upload-area {
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            margin-top: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .upload-area:hover {
+            border-color: rgba(79, 172, 254, 0.5);
+            background: rgba(79, 172, 254, 0.1);
+        }
+
+        .upload-area.dragover {
+            border-color: #4facfe;
+            background: rgba(79, 172, 254, 0.2);
+        }
+
         /* Desktop optimizations */
         @media (min-width: 768px) {
             body {
@@ -285,31 +381,25 @@
                 right: 20px;
                 padding: 10px 20px;
             }
-        }
-
-        /* Add header row for desktop */
-        @media (min-width: 768px) {
-            .user-list::before {
-                content: '';
-                display: table-row;
-            }
 
             .desktop-header {
-                display: none;
+                display: table-row;
+                font-weight: bold;
             }
 
-            @media (min-width: 768px) {
-                .desktop-header {
-                    display: table-row;
-                    font-weight: bold;
-                }
+            .desktop-header > div {
+                display: table-cell;
+                padding: 12px;
+                border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+                color: #4facfe;
+            }
 
-                .desktop-header > div {
-                    display: table-cell;
-                    padding: 12px;
-                    border-bottom: 2px solid rgba(255, 255, 255, 0.2);
-                    color: #4facfe;
-                }
+            .file-item {
+                flex-direction: row;
+            }
+
+            .file-actions {
+                margin-left: 15px;
             }
         }
 
@@ -331,6 +421,28 @@
 
         @keyframes spin {
             to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .desktop-header {
+                display: none;
+            }
+
+            .file-item {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .file-actions {
+                margin-left: 0;
+                margin-top: 8px;
+                justify-content: center;
+            }
+
+            .file-manager-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
         }
     </style>
 </head>
@@ -392,6 +504,48 @@
                     <!-- Pins will be loaded here -->
                 </div>
             </div>
+
+            <!-- File Manager Section -->
+            <div class="section">
+                <h2>Datei-Manager</h2>
+                
+                <div class="file-manager">
+                    <!-- Data Directory -->
+                    <div class="file-manager-section">
+                        <div class="file-manager-header">
+                            <h3>Data Verzeichnis (CSV Dateien)</h3>
+                            <div class="btn-group">
+                                <button class="btn btn-success" onclick="downloadBackup()">🔽 Vollständiges Backup</button>
+                                <button class="btn btn-primary" onclick="refreshFiles('data')">🔄 Aktualisieren</button>
+                            </div>
+                        </div>
+                        <div class="file-list" id="dataFiles">
+                            <div class="loading"><div class="spinner"></div></div>
+                        </div>
+                        <div class="upload-area" onclick="document.getElementById('dataUpload').click()" 
+                             ondragover="handleDragOver(event)" ondrop="handleDrop(event, 'data')">
+                            <p>📁 Datei hierher ziehen oder klicken zum Hochladen</p>
+                            <input type="file" id="dataUpload" style="display: none" onchange="uploadFile('data', this.files[0])">
+                        </div>
+                    </div>
+
+                    <!-- Uploads Directory -->
+                    <div class="file-manager-section">
+                        <div class="file-manager-header">
+                            <h3>Uploads Verzeichnis (Bilder)</h3>
+                            <button class="btn btn-primary" onclick="refreshFiles('uploads')">🔄 Aktualisieren</button>
+                        </div>
+                        <div class="file-list" id="uploadsFiles">
+                            <div class="loading"><div class="spinner"></div></div>
+                        </div>
+                        <div class="upload-area" onclick="document.getElementById('uploadsUpload').click()" 
+                             ondragover="handleDragOver(event)" ondrop="handleDrop(event, 'uploads')">
+                            <p>🖼️ Datei hierher ziehen oder klicken zum Hochladen</p>
+                            <input type="file" id="uploadsUpload" style="display: none" accept="image/*" onchange="uploadFile('uploads', this.files[0])">
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -403,7 +557,7 @@
         window.addEventListener('resize', () => {
             isMobile = window.innerWidth < 768;
             if (adminToken) {
-                loadUsers(); // Reload to apply correct layout
+                loadUsers();
             }
         });
 
@@ -430,6 +584,7 @@
                     document.getElementById('adminPanel').style.display = 'block';
                     loadUsers();
                     loadPins();
+                    loadFiles();
                 } else {
                     document.getElementById('loginError').textContent = 'Ungültige Anmeldedaten';
                 }
@@ -460,7 +615,6 @@
         function displayUsers(users) {
             const container = document.getElementById('usersList');
             
-            // Keep header if it exists
             const header = container.querySelector('.desktop-header');
             container.innerHTML = '';
             if (header && !isMobile) {
@@ -646,6 +800,184 @@
             }
         }
 
+        // File Manager Functions
+        async function loadFiles() {
+            await refreshFiles('data');
+            await refreshFiles('uploads');
+        }
+
+        async function refreshFiles(directory) {
+            const container = document.getElementById(`${directory}Files`);
+            container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+            
+            try {
+                const response = await fetch(`${API_URL}/api/admin/files/${directory}`, {
+                    headers: {
+                        'Authorization': `Bearer ${adminToken}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    displayFiles(directory, data.files);
+                } else {
+                    container.innerHTML = '<p style="color: #ff6b6b;">Fehler beim Laden der Dateien</p>';
+                }
+            } catch (error) {
+                console.error('Error loading files:', error);
+                container.innerHTML = '<p style="color: #ff6b6b;">Verbindungsfehler</p>';
+            }
+        }
+
+        function displayFiles(directory, files) {
+            const container = document.getElementById(`${directory}Files`);
+            
+            if (files.length === 0) {
+                container.innerHTML = '<p style="color: #999; text-align: center; padding: 20px;">Keine Dateien vorhanden</p>';
+                return;
+            }
+            
+            container.innerHTML = '';
+            
+            files.forEach(file => {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                
+                const fileSize = (file.size / 1024).toFixed(1) + ' KB';
+                const fileDate = new Date(file.modified).toLocaleDateString('de-DE');
+                
+                fileItem.innerHTML = `
+                    <div class="file-info">
+                        <div class="file-name">${file.name}</div>
+                        <div class="file-details">${fileSize} • ${fileDate}</div>
+                    </div>
+                    <div class="file-actions">
+                        <button class="btn btn-primary" onclick="downloadFile('${directory}', '${file.name}')">⬇️</button>
+                        <button class="btn btn-danger" onclick="deleteFile('${directory}', '${file.name}')">🗑️</button>
+                    </div>
+                `;
+                
+                container.appendChild(fileItem);
+            });
+        }
+
+        async function downloadFile(directory, filename) {
+            try {
+                const response = await fetch(`${API_URL}/api/admin/files/${directory}/${filename}`, {
+                    headers: {
+                        'Authorization': `Bearer ${adminToken}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                }
+            } catch (error) {
+                console.error('Download error:', error);
+                alert('Download fehlgeschlagen');
+            }
+        }
+
+        async function deleteFile(directory, filename) {
+            if (!confirm(`Datei "${filename}" wirklich löschen?`)) return;
+            
+            try {
+                const response = await fetch(`${API_URL}/api/admin/files/${directory}/${filename}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${adminToken}`
+                    }
+                });
+                
+                if (response.ok) {
+                    refreshFiles(directory);
+                } else {
+                    alert('Löschen fehlgeschlagen');
+                }
+            } catch (error) {
+                console.error('Delete error:', error);
+                alert('Löschen fehlgeschlagen');
+            }
+        }
+
+        async function uploadFile(directory, file) {
+            if (!file) return;
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            try {
+                const response = await fetch(`${API_URL}/api/admin/files/${directory}`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${adminToken}`
+                    },
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    refreshFiles(directory);
+                } else {
+                    alert('Upload fehlgeschlagen');
+                }
+            } catch (error) {
+                console.error('Upload error:', error);
+                alert('Upload fehlgeschlagen');
+            }
+        }
+
+        // Drag and drop handlers
+        function handleDragOver(event) {
+            event.preventDefault();
+            event.currentTarget.classList.add('dragover');
+        }
+
+        function handleDrop(event, directory) {
+            event.preventDefault();
+            event.currentTarget.classList.remove('dragover');
+            
+            const files = event.dataTransfer.files;
+            if (files.length > 0) {
+                uploadFile(directory, files[0]);
+            }
+        }
+
+        // Download backup
+        async function downloadBackup() {
+            try {
+                const response = await fetch(`${API_URL}/api/admin/backup`, {
+                    headers: {
+                        'Authorization': `Bearer ${adminToken}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `rheinfallspinsel_backup_${new Date().toISOString().slice(0,10)}.zip`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                } else {
+                    alert('Backup-Download fehlgeschlagen');
+                }
+            } catch (error) {
+                console.error('Backup error:', error);
+                alert('Backup-Download fehlgeschlagen');
+            }
+        }
+
         // Logout
         function logout() {
             adminToken = null;
@@ -653,6 +985,15 @@
             document.getElementById('loginForm').style.display = 'block';
             document.getElementById('adminPassword').value = '';
         }
+
+        // Remove dragover class when leaving
+        document.addEventListener('dragleave', (e) => {
+            if (!e.currentTarget.contains(e.relatedTarget)) {
+                document.querySelectorAll('.upload-area').forEach(area => {
+                    area.classList.remove('dragover');
+                });
+            }
+        });
     </script>
 </body>
 </html>
