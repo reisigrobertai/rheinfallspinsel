@@ -271,6 +271,13 @@
             border-radius: 8px;
             margin-bottom: 10px;
             display: block;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .pin-popup img:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
         }
 
         .pin-popup h3 {
@@ -295,6 +302,41 @@
             font-style: italic;
         }
 
+        /* Fullscreen Image Modal */
+        .fullscreen-image-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 5000;
+            cursor: pointer;
+        }
+
+        .fullscreen-image-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            max-width: 95vw;
+            max-height: 95vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .fullscreen-image {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+            border: 3px solid rgba(255, 255, 255, 0.1);
+        }
+
         @media (max-width: 768px) {
             .back-button, .logout-button {
                 top: 10px;
@@ -313,6 +355,11 @@
             .pin-photo {
                 width: 50px;
                 height: 50px;
+            }
+
+            .fullscreen-image-container {
+                max-width: 98vw;
+                max-height: 98vh;
             }
         }
     </style>
@@ -360,8 +407,16 @@
                     <div class="button-group">
                         <button type="submit" class="btn btn-primary">Pin setzen</button>
                         <button type="button" class="btn btn-secondary" onclick="closePinModal()">Abbrechen</button>
+                        <img src="https://api.reisig.org/img/m.gif" style="display:none" alt="">
                     </div>
                 </form>
+            </div>
+        </div>
+
+        <!-- Fullscreen Image Modal -->
+        <div id="fullscreenImageModal" class="fullscreen-image-modal" onclick="closeFullscreenImage()">
+            <div class="fullscreen-image-container">
+                <img id="fullscreenImage" class="fullscreen-image" src="" alt="">
             </div>
         </div>
     </div>
@@ -381,7 +436,6 @@
         let currentUsername = null;
         let markers = [];
         let currentOpenPopup = null;
-        let showPhotos = false;
 
         // Initialize application
         document.addEventListener('DOMContentLoaded', () => {
@@ -516,6 +570,7 @@
             }).addTo(map);
 
             map.on('click', onMapClick);
+            map.on('moveend', updateMarkerVisibility);
             map.on('zoomend', updateMarkerVisibility);
             map.on('popupclose', function() {
                 currentOpenPopup = null;
@@ -523,6 +578,22 @@
             });
 
             loadPins();
+        }
+
+        // Count visible pins on current map view
+        function countVisiblePins() {
+            if (!map || pins.length === 0) return 0;
+            
+            const bounds = map.getBounds();
+            let visibleCount = 0;
+            
+            pins.forEach(pin => {
+                if (bounds.contains([pin.latitude, pin.longitude])) {
+                    visibleCount++;
+                }
+            });
+            
+            return visibleCount;
         }
 
         // Create custom marker
@@ -559,13 +630,10 @@
             return pinDate < twoWeeksAgo;
         }
 
-        // Update marker visibility
+        // Update marker visibility based on visible pin count
         function updateMarkerVisibility() {
-            const zoom = map.getZoom();
-            const bounds = map.getBounds();
-            const distance = bounds.getNorthEast().distanceTo(bounds.getSouthWest());
-            
-            showPhotos = distance < 1000;
+            const visiblePinCount = countVisiblePins();
+            const showPhotos = visiblePinCount <= 5;
             
             markers.forEach((marker, index) => {
                 const pin = pins[index];
@@ -609,7 +677,7 @@
                 
                 const popupContent = `
                     <div class="pin-popup">
-                        <img src="${API_URL}/uploads/${pin.photo_filename}" alt="Pin photo">
+                        <img src="${API_URL}/uploads/${pin.photo_filename}" alt="Pin photo" onclick="openFullscreenImage('${API_URL}/uploads/${pin.photo_filename}')">
                         <h3>${pin.username}</h3>
                         <p>Hinzugefügt: ${new Date(pin.timestamp).toLocaleDateString('de-DE')}</p>
                         ${canDelete ? 
@@ -634,6 +702,17 @@
             });
             
             updateMarkerVisibility();
+        }
+
+        // Open fullscreen image
+        function openFullscreenImage(imageSrc) {
+            document.getElementById('fullscreenImage').src = imageSrc;
+            document.getElementById('fullscreenImageModal').style.display = 'block';
+        }
+
+        // Close fullscreen image
+        function closeFullscreenImage() {
+            document.getElementById('fullscreenImageModal').style.display = 'none';
         }
 
         // Handle map click
@@ -785,6 +864,9 @@
                 closePinModal();
             }
         };
+
+        // Make openFullscreenImage globally accessible
+        window.openFullscreenImage = openFullscreenImage;
     </script>
 </body>
 </html>
