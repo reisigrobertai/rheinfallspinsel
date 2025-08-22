@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rheinfallspinsel - Admin</title>
+    <title>Rheinfallspinsel - Administration</title>
     <link rel="icon" type="image/svg" href="/LogoPlainSVG.svg">
     <style>
         * {
@@ -13,254 +13,392 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #0a0a0a;
-            color: white;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background: linear-gradient(135deg, #0f1419 0%, #1a1f2e 50%, #16213e 100%);
+            color: #e2e8f0;
             min-height: 100vh;
-            padding: 15px;
+            padding: 16px;
+            overflow-x: hidden;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
         }
 
-        h1 {
+        .header {
             text-align: center;
-            margin-bottom: 30px;
-            font-size: clamp(1.8rem, 5vw, 2.5rem);
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin-bottom: 32px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #60a5fa 0%, #a855f7 50%, #ec4899 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            margin-bottom: 8px;
         }
 
-        .login-form {
-            max-width: 400px;
-            margin: 50px auto;
-            background: #1a1a2e;
-            padding: 25px;
-            border-radius: 15px;
-            border: 2px solid rgba(255, 255, 255, 0.1);
+        .header p {
+            color: #94a3b8;
+            font-size: 1.1rem;
         }
 
+        /* Login Form */
+        .login-container {
+            max-width: 420px;
+            margin: 80px auto;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .login-header h2 {
+            font-size: 1.875rem;
+            font-weight: 600;
+            color: #f1f5f9;
+            margin-bottom: 8px;
+        }
+
+        .login-header p {
+            color: #64748b;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #cbd5e1;
+            margin-bottom: 8px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 8px;
+            color: #f1f5f9;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #60a5fa;
+            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+            box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.25);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px 0 rgba(59, 130, 246, 0.35);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            box-shadow: 0 4px 14px 0 rgba(16, 185, 129, 0.25);
+        }
+
+        .btn-success:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px 0 rgba(16, 185, 129, 0.35);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            box-shadow: 0 4px 14px 0 rgba(239, 68, 68, 0.25);
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px 0 rgba(239, 68, 68, 0.35);
+        }
+
+        .btn-secondary {
+            background: rgba(71, 85, 105, 0.8);
+            color: #e2e8f0;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(71, 85, 105, 1);
+            transform: translateY(-1px);
+        }
+
+        .btn-full {
+            width: 100%;
+        }
+
+        .error-message {
+            color: #fca5a5;
+            font-size: 0.875rem;
+            margin-top: 8px;
+        }
+
+        .success-message {
+            color: #86efac;
+            font-size: 0.875rem;
+            margin-top: 8px;
+        }
+
+        /* Admin Panel */
         .admin-panel {
             display: none;
         }
 
+        .logout-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            padding: 8px 16px;
+            font-size: 0.875rem;
+        }
+
         .section {
-            background: #1a1a2e;
-            padding: 20px;
-            border-radius: 15px;
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            margin-bottom: 20px;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
         }
 
-        .section h2 {
-            margin-bottom: 15px;
-            color: #4facfe;
-            font-size: clamp(1.2rem, 3vw, 1.5rem);
-        }
-
-        .section h3 {
-            margin-top: 20px;
-            margin-bottom: 15px;
-            color: #667eea;
-            font-size: clamp(1rem, 2.5vw, 1.2rem);
-        }
-
-        /* Mobile-first table design */
-        .user-list {
+        .section-header {
             display: flex;
-            flex-direction: column;
-            gap: 15px;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #f1f5f9;
+        }
+
+        .section-subtitle {
+            font-size: 1.125rem;
+            font-weight: 500;
+            color: #cbd5e1;
+            margin: 24px 0 16px 0;
+        }
+
+        /* User Management */
+        .user-grid {
+            display: grid;
+            gap: 16px;
         }
 
         .user-card {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 15px;
-            border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(30, 41, 59, 0.4);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            border-radius: 12px;
+            padding: 20px;
         }
 
         .user-card-header {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
+            justify-content: between;
+            margin-bottom: 16px;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: #f1f5f9;
+            font-size: 1.125rem;
         }
 
         .user-inputs {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-
-        input[type="text"], input[type="password"], select {
-            width: 100%;
-            padding: 10px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
-            color: white;
-            font-size: 14px;
-        }
-
-        .btn {
-            padding: 10px 15px;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 14px;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            color: white;
-        }
-
-        .btn-danger {
-            background: #ff6b6b;
-            color: white;
-        }
-
-        .btn-success {
-            background: #51cf66;
-            color: white;
-        }
-
-        .btn-warning {
-            background: #ffa500;
-            color: white;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            opacity: 0.9;
+            display: grid;
+            gap: 12px;
+            margin-bottom: 16px;
         }
 
         .btn-group {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             flex-wrap: wrap;
         }
 
-        .btn-group .btn {
-            flex: 1;
-            min-width: 100px;
+        .add-user-form {
+            background: rgba(30, 41, 59, 0.4);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 16px;
         }
 
-        .error-message {
-            color: #ff6b6b;
-            margin: 10px 0;
-            font-size: 14px;
+        /* Pin Management */
+        .pins-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 16px;
         }
 
-        .success-message {
-            color: #51cf66;
-            margin: 10px 0;
-            font-size: 14px;
+        .pins-stats {
+            color: #94a3b8;
+            font-size: 0.875rem;
         }
 
-        .form-group {
-            margin-bottom: 15px;
+        .pagination {
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-size: 14px;
-            opacity: 0.8;
+        .pagination-info {
+            color: #94a3b8;
+            font-size: 0.875rem;
+            margin: 0 16px;
         }
 
         .pins-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 15px;
-            margin-top: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
         }
 
         .pin-card {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-            padding: 15px;
+            background: rgba(30, 41, 59, 0.4);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            border-radius: 12px;
+            padding: 16px;
             text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.2s ease;
         }
 
-        .pin-card img {
+        .pin-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+        }
+
+        .pin-image {
             width: 100%;
-            max-width: 200px;
-            height: 150px;
+            height: 160px;
             object-fit: cover;
             border-radius: 8px;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
         }
 
-        .pin-card h4 {
-            margin: 10px 0 5px 0;
-            color: #4facfe;
+        .pin-username {
+            font-weight: 600;
+            color: #60a5fa;
+            margin-bottom: 4px;
         }
 
-        .pin-card p {
-            font-size: 12px;
-            color: #999;
-            margin: 5px 0;
+        .pin-date {
+            color: #94a3b8;
+            font-size: 0.875rem;
+            margin-bottom: 8px;
         }
 
-        .logout-btn {
-            position: fixed;
-            top: 15px;
-            right: 15px;
-            padding: 8px 16px;
-            font-size: 14px;
-            z-index: 100;
+        .pin-coords {
+            color: #64748b;
+            font-size: 0.75rem;
+            margin-bottom: 12px;
         }
 
-        /* File Manager Styles */
-        .file-manager {
-            margin-top: 20px;
-        }
-
-        .file-manager-section {
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 15px;
-        }
-
-        .file-manager-header {
+        .pin-protected {
+            color: #fbbf24;
+            font-size: 0.75rem;
+            margin-bottom: 12px;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-            gap: 10px;
+            justify-content: center;
+            gap: 4px;
         }
 
-        .file-list {
+        /* File Manager */
+        .file-section {
+            background: rgba(30, 41, 59, 0.4);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .file-section-header {
             display: flex;
-            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .file-section-title {
+            font-size: 1.125rem;
+            font-weight: 500;
+            color: #cbd5e1;
+        }
+
+        .file-grid {
+            display: grid;
             gap: 8px;
             max-height: 300px;
             overflow-y: auto;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 12px;
+            background: rgba(15, 23, 42, 0.6);
             border-radius: 8px;
-            padding: 10px;
-            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(148, 163, 184, 0.1);
         }
 
         .file-item {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            padding: 8px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 5px;
-            font-size: 13px;
+            justify-content: space-between;
+            padding: 12px;
+            background: rgba(30, 41, 59, 0.6);
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .file-item:hover {
+            background: rgba(30, 41, 59, 0.8);
         }
 
         .file-info {
@@ -270,152 +408,116 @@
 
         .file-name {
             font-weight: 500;
-            margin-bottom: 2px;
+            color: #f1f5f9;
+            margin-bottom: 4px;
             word-break: break-all;
         }
 
         .file-details {
-            color: #999;
-            font-size: 11px;
+            color: #64748b;
+            font-size: 0.75rem;
         }
 
         .file-actions {
             display: flex;
-            gap: 5px;
-            margin-left: 10px;
+            gap: 6px;
+            margin-left: 12px;
         }
 
         .file-actions .btn {
-            padding: 4px 8px;
-            font-size: 11px;
-            min-width: auto;
+            padding: 6px 12px;
+            font-size: 0.75rem;
         }
 
-        .upload-area {
-            border: 2px dashed rgba(255, 255, 255, 0.2);
+        .upload-zone {
+            border: 2px dashed rgba(148, 163, 184, 0.3);
             border-radius: 8px;
-            padding: 20px;
+            padding: 24px;
             text-align: center;
-            margin-top: 10px;
+            margin-top: 16px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
+            background: rgba(15, 23, 42, 0.3);
         }
 
-        .upload-area:hover {
-            border-color: rgba(79, 172, 254, 0.5);
-            background: rgba(79, 172, 254, 0.1);
+        .upload-zone:hover, .upload-zone.dragover {
+            border-color: #60a5fa;
+            background: rgba(96, 165, 250, 0.1);
         }
 
-        .upload-area.dragover {
-            border-color: #4facfe;
-            background: rgba(79, 172, 254, 0.2);
+        .upload-zone-text {
+            color: #94a3b8;
+            font-size: 0.875rem;
         }
 
-        /* Desktop optimizations */
-        @media (min-width: 768px) {
-            body {
-                padding: 20px;
-            }
+        .upload-zone-icon {
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+        }
 
-            .login-form {
-                margin: 100px auto;
-                padding: 30px;
-            }
-
-            .section {
-                padding: 30px;
-            }
-
-            /* Table view for desktop */
-            .user-list {
-                display: table;
-                width: 100%;
-                border-collapse: collapse;
-            }
-
-            .user-card {
-                display: table-row;
-                background: none;
-                padding: 0;
-                border: none;
-            }
-
-            .user-card:first-child {
-                font-weight: bold;
-                border-bottom: 2px solid rgba(255, 255, 255, 0.2);
-            }
-
-            .user-card > div {
-                display: table-cell;
-                padding: 12px;
-                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-                vertical-align: middle;
-            }
-
+        /* Responsive Design - Mobile First */
+        @media (min-width: 640px) {
             .user-inputs {
-                flex-direction: row;
-                gap: 10px;
-                margin: 0;
+                grid-template-columns: 1fr 1fr;
             }
-
-            .user-inputs input {
-                width: 150px;
-            }
-
+            
             .btn-group {
                 justify-content: flex-end;
             }
+        }
 
-            .btn-group .btn {
-                flex: none;
-                min-width: auto;
+        @media (min-width: 768px) {
+            body {
+                padding: 24px;
+            }
+
+            .header h1 {
+                font-size: 3rem;
+            }
+
+            .section {
+                padding: 32px;
             }
 
             .pins-grid {
-                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-                gap: 20px;
+                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+                gap: 24px;
             }
 
             .logout-btn {
-                top: 20px;
-                right: 20px;
                 padding: 10px 20px;
+                font-size: 0.875rem;
             }
+        }
 
-            .desktop-header {
-                display: table-row;
-                font-weight: bold;
-            }
-
-            .desktop-header > div {
-                display: table-cell;
-                padding: 12px;
-                border-bottom: 2px solid rgba(255, 255, 255, 0.2);
-                color: #4facfe;
-            }
-
-            .file-item {
-                flex-direction: row;
+        @media (min-width: 1024px) {
+            .user-grid {
+                grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
             }
 
             .file-actions {
-                margin-left: 15px;
+                margin-left: 16px;
             }
         }
 
-        /* Loading spinner */
-        .loading {
-            text-align: center;
-            padding: 20px;
+        /* Remove scrollbars */
+        .file-grid::-webkit-scrollbar {
+            display: none;
         }
 
-        .spinner {
+        .file-grid {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Loading States */
+        .loading-spinner {
             display: inline-block;
-            width: 40px;
-            height: 40px;
-            border: 3px solid rgba(255, 255, 255, 0.1);
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(148, 163, 184, 0.3);
             border-radius: 50%;
-            border-top-color: #4facfe;
+            border-top-color: #60a5fa;
             animation: spin 1s ease-in-out infinite;
         }
 
@@ -423,83 +525,87 @@
             to { transform: rotate(360deg); }
         }
 
-        @media (max-width: 768px) {
-            .desktop-header {
-                display: none;
-            }
-
-            .file-item {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .file-actions {
-                margin-left: 0;
-                margin-top: 8px;
-                justify-content: center;
-            }
-
-            .file-manager-header {
-                flex-direction: column;
-                align-items: stretch;
-            }
+        .loading-state {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            color: #94a3b8;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>ADMIN PANEL</h1>
-
         <!-- Login Form -->
-        <div class="login-form" id="loginForm">
-            <h2>Admin Login</h2>
+        <div class="login-container" id="loginForm">
+            <div class="login-header">
+                <h2>Administration</h2>
+                <p>Secure access required</p>
+            </div>
             <form id="adminLoginForm">
                 <div class="form-group">
-                    <label>Benutzername</label>
-                    <input type="text" id="adminUsername" value="Robert" readonly>
-                </div>
-                <div class="form-group">
-                    <label>Passwort</label>
-                    <input type="password" id="adminPassword" required>
+                    <label class="form-label">Administrator Password</label>
+                    <input type="password" class="form-input" id="adminPassword" required placeholder="Enter admin password">
                 </div>
                 <div class="error-message" id="loginError"></div>
-                <button type="submit" class="btn btn-primary" style="width: 100%;">Login</button>
+                <button type="submit" class="btn btn-primary btn-full">Access Admin Panel</button>
             </form>
         </div>
 
         <!-- Admin Panel -->
         <div class="admin-panel" id="adminPanel">
-            <button class="btn btn-danger logout-btn" onclick="logout()">Logout</button>
+            <button class="btn btn-danger logout-btn" onclick="logout()">Sign Out</button>
 
-            <!-- Users Section -->
+            <div class="header">
+                <h1>Administration Panel</h1>
+                <p>Manage users, pins, and system files</p>
+            </div>
+
+            <!-- User Management Section -->
             <div class="section">
-                <h2>Benutzer verwalten</h2>
+                <div class="section-header">
+                    <h2 class="section-title">User Management</h2>
+                </div>
                 
-                <div class="user-list" id="usersList">
-                    <div class="desktop-header">
-                        <div>Benutzername</div>
-                        <div>Passwort</div>
-                        <div>Aktionen</div>
-                    </div>
+                <div class="user-grid" id="usersList">
                     <!-- Users will be loaded here -->
                 </div>
                 
-                <h3>Neuen Benutzer hinzufügen</h3>
-                <form id="addUserForm">
-                    <div class="user-inputs">
-                        <input type="text" id="newUsername" placeholder="Benutzername" required>
-                        <input type="password" id="newPassword" placeholder="Passwort" required>
-                    </div>
-                    <button type="submit" class="btn btn-success">Benutzer hinzufügen</button>
-                </form>
-                <div class="success-message" id="userSuccess"></div>
-                <div class="error-message" id="userError"></div>
+                <h3 class="section-subtitle">Create New User</h3>
+                <div class="add-user-form">
+                    <form id="addUserForm">
+                        <div class="user-inputs">
+                            <div class="form-group">
+                                <label class="form-label">Username</label>
+                                <input type="text" class="form-input" id="newUsername" placeholder="Enter username" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Password</label>
+                                <input type="password" class="form-input" id="newPassword" placeholder="Enter password" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-success">Create User Account</button>
+                    </form>
+                    <div class="success-message" id="userSuccess"></div>
+                    <div class="error-message" id="userError"></div>
+                </div>
             </div>
 
-            <!-- Pins Section -->
+            <!-- Pin Management Section -->
             <div class="section">
-                <h2>Pins verwalten</h2>
-                <div id="pinsCount" style="margin-bottom: 15px;"></div>
+                <div class="section-header">
+                    <h2 class="section-title">Pin Management</h2>
+                </div>
+                
+                <div class="pins-header">
+                    <div class="pins-stats" id="pinsStats">
+                        Loading pins...
+                    </div>
+                    <div class="pagination" id="pinsPagination">
+                        <!-- Pagination will be loaded here -->
+                    </div>
+                </div>
+                
                 <div class="pins-grid" id="pinsGrid">
                     <!-- Pins will be loaded here -->
                 </div>
@@ -507,42 +613,48 @@
 
             <!-- File Manager Section -->
             <div class="section">
-                <h2>Datei-Manager</h2>
+                <div class="section-header">
+                    <h2 class="section-title">File Manager</h2>
+                    <button class="btn btn-success" onclick="downloadBackup()">📦 Download Complete Backup</button>
+                </div>
                 
-                <div class="file-manager">
-                    <!-- Data Directory -->
-                    <div class="file-manager-section">
-                        <div class="file-manager-header">
-                            <h3>Data Verzeichnis (CSV Dateien)</h3>
-                            <div class="btn-group">
-                                <button class="btn btn-success" onclick="downloadBackup()">🔽 Vollständiges Backup</button>
-                                <button class="btn btn-primary" onclick="refreshFiles('data')">🔄 Aktualisieren</button>
-                            </div>
-                        </div>
-                        <div class="file-list" id="dataFiles">
-                            <div class="loading"><div class="spinner"></div></div>
-                        </div>
-                        <div class="upload-area" onclick="document.getElementById('dataUpload').click()" 
-                             ondragover="handleDragOver(event)" ondrop="handleDrop(event, 'data')">
-                            <p>📁 Datei hierher ziehen oder klicken zum Hochladen</p>
-                            <input type="file" id="dataUpload" style="display: none" onchange="uploadFile('data', this.files[0])">
+                <!-- Data Directory -->
+                <div class="file-section">
+                    <div class="file-section-header">
+                        <h3 class="file-section-title">📄 Data Directory (CSV Files)</h3>
+                        <button class="btn btn-secondary" onclick="refreshFiles('data')">🔄 Refresh</button>
+                    </div>
+                    <div class="file-grid" id="dataFiles">
+                        <div class="loading-state">
+                            <div class="loading-spinner"></div>
+                            <span style="margin-left: 12px;">Loading files...</span>
                         </div>
                     </div>
+                    <div class="upload-zone" onclick="document.getElementById('dataUpload').click()" 
+                         ondragover="handleDragOver(event)" ondrop="handleDrop(event, 'data')">
+                        <div class="upload-zone-icon">📁</div>
+                        <div class="upload-zone-text">Drop files here or click to upload</div>
+                        <input type="file" id="dataUpload" style="display: none" onchange="uploadFile('data', this.files[0])">
+                    </div>
+                </div>
 
-                    <!-- Uploads Directory -->
-                    <div class="file-manager-section">
-                        <div class="file-manager-header">
-                            <h3>Uploads Verzeichnis (Bilder)</h3>
-                            <button class="btn btn-primary" onclick="refreshFiles('uploads')">🔄 Aktualisieren</button>
+                <!-- Uploads Directory -->
+                <div class="file-section">
+                    <div class="file-section-header">
+                        <h3 class="file-section-title">🖼️ Uploads Directory (Images)</h3>
+                        <button class="btn btn-secondary" onclick="refreshFiles('uploads')">🔄 Refresh</button>
+                    </div>
+                    <div class="file-grid" id="uploadsFiles">
+                        <div class="loading-state">
+                            <div class="loading-spinner"></div>
+                            <span style="margin-left: 12px;">Loading files...</span>
                         </div>
-                        <div class="file-list" id="uploadsFiles">
-                            <div class="loading"><div class="spinner"></div></div>
-                        </div>
-                        <div class="upload-area" onclick="document.getElementById('uploadsUpload').click()" 
-                             ondragover="handleDragOver(event)" ondrop="handleDrop(event, 'uploads')">
-                            <p>🖼️ Datei hierher ziehen oder klicken zum Hochladen</p>
-                            <input type="file" id="uploadsUpload" style="display: none" accept="image/*" onchange="uploadFile('uploads', this.files[0])">
-                        </div>
+                    </div>
+                    <div class="upload-zone" onclick="document.getElementById('uploadsUpload').click()" 
+                         ondragover="handleDragOver(event)" ondrop="handleDrop(event, 'uploads')">
+                        <div class="upload-zone-icon">🖼️</div>
+                        <div class="upload-zone-text">Drop images here or click to upload</div>
+                        <input type="file" id="uploadsUpload" style="display: none" accept="image/*" onchange="uploadFile('uploads', this.files[0])">
                     </div>
                 </div>
             </div>
@@ -552,20 +664,14 @@
     <script>
         const API_URL = 'https://gluecksrad-backend.rheinfallspinsel.de';
         let adminToken = null;
-        let isMobile = window.innerWidth < 768;
+        let currentPinPage = 0;
+        const PINS_PER_PAGE = 10;
+        let totalPins = 0;
 
-        window.addEventListener('resize', () => {
-            isMobile = window.innerWidth < 768;
-            if (adminToken) {
-                loadUsers();
-            }
-        });
-
-        // Login
+        // Login Handler
         document.getElementById('adminLoginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const username = document.getElementById('adminUsername').value;
             const password = document.getElementById('adminPassword').value;
             
             try {
@@ -574,7 +680,7 @@
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ username, password })
+                    body: JSON.stringify({ username: 'Robert', password })
                 });
                 
                 if (response.ok) {
@@ -582,24 +688,29 @@
                     adminToken = data.token;
                     document.getElementById('loginForm').style.display = 'none';
                     document.getElementById('adminPanel').style.display = 'block';
-                    loadUsers();
-                    loadPins();
-                    loadFiles();
+                    await initializeAdminPanel();
                 } else {
-                    document.getElementById('loginError').textContent = 'Ungültige Anmeldedaten';
+                    document.getElementById('loginError').textContent = 'Invalid administrator password';
                 }
             } catch (error) {
-                document.getElementById('loginError').textContent = 'Verbindungsfehler';
+                document.getElementById('loginError').textContent = 'Connection error occurred';
             }
         });
 
-        // Load users
+        // Initialize Admin Panel
+        async function initializeAdminPanel() {
+            await Promise.all([
+                loadUsers(),
+                loadPins(),
+                loadFiles()
+            ]);
+        }
+
+        // Load Users
         async function loadUsers() {
             try {
                 const response = await fetch(`${API_URL}/api/admin/users`, {
-                    headers: {
-                        'Authorization': `Bearer ${adminToken}`
-                    }
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
                 });
                 
                 if (response.ok) {
@@ -611,56 +722,38 @@
             }
         }
 
-        // Display users
+        // Display Users
         function displayUsers(users) {
             const container = document.getElementById('usersList');
-            
-            const header = container.querySelector('.desktop-header');
             container.innerHTML = '';
-            if (header && !isMobile) {
-                container.appendChild(header);
-            }
             
             users.forEach(user => {
                 const userCard = document.createElement('div');
                 userCard.className = 'user-card';
-                
-                if (isMobile) {
-                    userCard.innerHTML = `
-                        <div class="user-card-header">
-                            <strong>${user.username}</strong>
+                userCard.innerHTML = `
+                    <div class="user-card-header">
+                        <div class="user-name">${user.username}</div>
+                    </div>
+                    <div class="user-inputs">
+                        <div class="form-group">
+                            <label class="form-label">Username</label>
+                            <input type="text" class="form-input" value="${user.username}" id="username-${user.username}">
                         </div>
-                        <div class="user-inputs">
-                            <input type="text" value="${user.username}" id="username-${user.username}" placeholder="Benutzername">
-                            <input type="password" value="${user.password}" id="password-${user.username}" placeholder="Passwort">
+                        <div class="form-group">
+                            <label class="form-label">Password</label>
+                            <input type="password" class="form-input" value="${user.password}" id="password-${user.username}">
                         </div>
-                        <div class="btn-group">
-                            <button class="btn btn-primary" onclick="updateUser('${user.username}')">Speichern</button>
-                            <button class="btn btn-danger" onclick="deleteUser('${user.username}')">Löschen</button>
-                        </div>
-                    `;
-                } else {
-                    userCard.innerHTML = `
-                        <div>
-                            <input type="text" value="${user.username}" id="username-${user.username}">
-                        </div>
-                        <div>
-                            <input type="password" value="${user.password}" id="password-${user.username}">
-                        </div>
-                        <div>
-                            <div class="btn-group">
-                                <button class="btn btn-primary" onclick="updateUser('${user.username}')">Speichern</button>
-                                <button class="btn btn-danger" onclick="deleteUser('${user.username}')">Löschen</button>
-                            </div>
-                        </div>
-                    `;
-                }
-                
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="updateUser('${user.username}')">Save Changes</button>
+                        <button class="btn btn-danger" onclick="deleteUser('${user.username}')">Delete User</button>
+                    </div>
+                `;
                 container.appendChild(userCard);
             });
         }
 
-        // Update user
+        // Update User
         async function updateUser(oldUsername) {
             const newUsername = document.getElementById(`username-${oldUsername}`).value;
             const newPassword = document.getElementById(`password-${oldUsername}`).value;
@@ -676,36 +769,34 @@
                 });
                 
                 if (response.ok) {
-                    loadUsers();
-                    document.getElementById('userSuccess').textContent = 'Benutzer aktualisiert';
-                    setTimeout(() => document.getElementById('userSuccess').textContent = '', 3000);
+                    await loadUsers();
+                    showMessage('userSuccess', 'User updated successfully');
                 }
             } catch (error) {
-                document.getElementById('userError').textContent = 'Fehler beim Aktualisieren';
+                showMessage('userError', 'Failed to update user');
             }
         }
 
-        // Delete user
+        // Delete User
         async function deleteUser(username) {
-            if (!confirm(`Benutzer ${username} wirklich löschen?`)) return;
+            if (!confirm(`Delete user "${username}"? This action cannot be undone.`)) return;
             
             try {
                 const response = await fetch(`${API_URL}/api/admin/users/${username}`, {
                     method: 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer ${adminToken}`
-                    }
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
                 });
                 
                 if (response.ok) {
-                    loadUsers();
+                    await loadUsers();
+                    showMessage('userSuccess', 'User deleted successfully');
                 }
             } catch (error) {
-                console.error('Error deleting user:', error);
+                showMessage('userError', 'Failed to delete user');
             }
         }
 
-        // Add user
+        // Add User
         document.getElementById('addUserForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -724,43 +815,47 @@
                 
                 if (response.ok) {
                     document.getElementById('addUserForm').reset();
-                    loadUsers();
-                    document.getElementById('userSuccess').textContent = 'Benutzer hinzugefügt';
-                    setTimeout(() => document.getElementById('userSuccess').textContent = '', 3000);
+                    await loadUsers();
+                    showMessage('userSuccess', 'User created successfully');
                 } else {
-                    document.getElementById('userError').textContent = 'Fehler beim Hinzufügen';
+                    showMessage('userError', 'Failed to create user');
                 }
             } catch (error) {
-                document.getElementById('userError').textContent = 'Verbindungsfehler';
+                showMessage('userError', 'Connection error occurred');
             }
         });
 
-        // Load pins
+        // Load Pins with Pagination
         async function loadPins() {
             try {
                 const response = await fetch(`${API_URL}/api/admin/pins`, {
-                    headers: {
-                        'Authorization': `Bearer ${adminToken}`
-                    }
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
                 });
                 
                 if (response.ok) {
-                    const pins = await response.json();
-                    displayPins(pins);
+                    const allPins = await response.json();
+                    totalPins = allPins.length;
+                    displayPins(allPins);
+                    updatePagination();
                 }
             } catch (error) {
                 console.error('Error loading pins:', error);
             }
         }
 
-        // Display pins
-        function displayPins(pins) {
-            document.getElementById('pinsCount').innerHTML = `<p>Gesamt: ${pins.length} Pins</p>`;
+        // Display Pins
+        function displayPins(allPins) {
+            const startIndex = currentPinPage * PINS_PER_PAGE;
+            const endIndex = startIndex + PINS_PER_PAGE;
+            const pinsToShow = allPins.slice(startIndex, endIndex);
+            
+            document.getElementById('pinsStats').textContent = 
+                `Showing ${startIndex + 1}-${Math.min(endIndex, totalPins)} of ${totalPins} pins`;
             
             const grid = document.getElementById('pinsGrid');
             grid.innerHTML = '';
             
-            pins.forEach(pin => {
+            pinsToShow.forEach(pin => {
                 const card = document.createElement('div');
                 card.className = 'pin-card';
                 
@@ -768,32 +863,60 @@
                 const isProtected = pinDate < new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
                 
                 card.innerHTML = `
-                    <img src="${API_URL}/uploads/${pin.photo_filename}" alt="Pin">
-                    <h4>${pin.username}</h4>
-                    <p>${pinDate.toLocaleDateString('de-DE')}</p>
-                    <p>Lat: ${pin.latitude.toFixed(6)}</p>
-                    <p>Lng: ${pin.longitude.toFixed(6)}</p>
-                    ${isProtected ? '<p style="color: #ffa500;">🔒 Geschützt</p>' : ''}
-                    <button class="btn btn-danger" onclick="deletePin(${pin.id})">Löschen</button>
+                    <img src="${API_URL}/uploads/${pin.photo_filename}" alt="Pin" class="pin-image">
+                    <div class="pin-username">${pin.username}</div>
+                    <div class="pin-date">${pinDate.toLocaleDateString('de-DE')}</div>
+                    <div class="pin-coords">
+                        ${pin.latitude.toFixed(6)}, ${pin.longitude.toFixed(6)}
+                    </div>
+                    ${isProtected ? '<div class="pin-protected">🔒 Protected Pin</div>' : ''}
+                    <button class="btn btn-danger" onclick="deletePin(${pin.id})">Remove Pin</button>
                 `;
                 grid.appendChild(card);
             });
         }
 
-        // Delete pin
+        // Update Pagination
+        function updatePagination() {
+            const totalPages = Math.ceil(totalPins / PINS_PER_PAGE);
+            const pagination = document.getElementById('pinsPagination');
+            
+            pagination.innerHTML = `
+                <button class="btn btn-secondary" onclick="changePinPage(-1)" ${currentPinPage === 0 ? 'disabled' : ''}>
+                    ← Previous
+                </button>
+                <div class="pagination-info">
+                    Page ${currentPinPage + 1} of ${totalPages}
+                </div>
+                <button class="btn btn-secondary" onclick="changePinPage(1)" ${currentPinPage >= totalPages - 1 ? 'disabled' : ''}>
+                    Next →
+                </button>
+            `;
+        }
+
+        // Change Pin Page
+        function changePinPage(direction) {
+            const totalPages = Math.ceil(totalPins / PINS_PER_PAGE);
+            const newPage = currentPinPage + direction;
+            
+            if (newPage >= 0 && newPage < totalPages) {
+                currentPinPage = newPage;
+                loadPins();
+            }
+        }
+
+        // Delete Pin
         async function deletePin(pinId) {
-            if (!confirm('Pin wirklich löschen?')) return;
+            if (!confirm('Delete this pin permanently? This action cannot be undone.')) return;
             
             try {
                 const response = await fetch(`${API_URL}/api/admin/pins/${pinId}`, {
                     method: 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer ${adminToken}`
-                    }
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
                 });
                 
                 if (response.ok) {
-                    loadPins();
+                    await loadPins();
                 }
             } catch (error) {
                 console.error('Error deleting pin:', error);
@@ -802,30 +925,34 @@
 
         // File Manager Functions
         async function loadFiles() {
-            await refreshFiles('data');
-            await refreshFiles('uploads');
+            await Promise.all([
+                refreshFiles('data'),
+                refreshFiles('uploads')
+            ]);
         }
 
         async function refreshFiles(directory) {
             const container = document.getElementById(`${directory}Files`);
-            container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+            container.innerHTML = `
+                <div class="loading-state">
+                    <div class="loading-spinner"></div>
+                    <span style="margin-left: 12px;">Loading files...</span>
+                </div>
+            `;
             
             try {
                 const response = await fetch(`${API_URL}/api/admin/files/${directory}`, {
-                    headers: {
-                        'Authorization': `Bearer ${adminToken}`
-                    }
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
                 });
                 
                 if (response.ok) {
                     const data = await response.json();
                     displayFiles(directory, data.files);
                 } else {
-                    container.innerHTML = '<p style="color: #ff6b6b;">Fehler beim Laden der Dateien</p>';
+                    container.innerHTML = '<div class="loading-state" style="color: #fca5a5;">Failed to load files</div>';
                 }
             } catch (error) {
-                console.error('Error loading files:', error);
-                container.innerHTML = '<p style="color: #ff6b6b;">Verbindungsfehler</p>';
+                container.innerHTML = '<div class="loading-state" style="color: #fca5a5;">Connection error</div>';
             }
         }
 
@@ -833,7 +960,7 @@
             const container = document.getElementById(`${directory}Files`);
             
             if (files.length === 0) {
-                container.innerHTML = '<p style="color: #999; text-align: center; padding: 20px;">Keine Dateien vorhanden</p>';
+                container.innerHTML = '<div class="loading-state" style="color: #94a3b8;">No files found</div>';
                 return;
             }
             
@@ -852,8 +979,8 @@
                         <div class="file-details">${fileSize} • ${fileDate}</div>
                     </div>
                     <div class="file-actions">
-                        <button class="btn btn-primary" onclick="downloadFile('${directory}', '${file.name}')">⬇️</button>
-                        <button class="btn btn-danger" onclick="deleteFile('${directory}', '${file.name}')">🗑️</button>
+                        <button class="btn btn-primary" onclick="downloadFile('${directory}', '${file.name}')">Download</button>
+                        <button class="btn btn-danger" onclick="deleteFile('${directory}', '${file.name}')">Delete</button>
                     </div>
                 `;
                 
@@ -864,9 +991,7 @@
         async function downloadFile(directory, filename) {
             try {
                 const response = await fetch(`${API_URL}/api/admin/files/${directory}/${filename}`, {
-                    headers: {
-                        'Authorization': `Bearer ${adminToken}`
-                    }
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
                 });
                 
                 if (response.ok) {
@@ -881,30 +1006,26 @@
                     window.URL.revokeObjectURL(url);
                 }
             } catch (error) {
-                console.error('Download error:', error);
-                alert('Download fehlgeschlagen');
+                alert('Download failed');
             }
         }
 
         async function deleteFile(directory, filename) {
-            if (!confirm(`Datei "${filename}" wirklich löschen?`)) return;
+            if (!confirm(`Delete "${filename}"? This action cannot be undone.`)) return;
             
             try {
                 const response = await fetch(`${API_URL}/api/admin/files/${directory}/${filename}`, {
                     method: 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer ${adminToken}`
-                    }
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
                 });
                 
                 if (response.ok) {
-                    refreshFiles(directory);
+                    await refreshFiles(directory);
                 } else {
-                    alert('Löschen fehlgeschlagen');
+                    alert('Delete failed');
                 }
             } catch (error) {
-                console.error('Delete error:', error);
-                alert('Löschen fehlgeschlagen');
+                alert('Delete failed');
             }
         }
 
@@ -917,24 +1038,21 @@
             try {
                 const response = await fetch(`${API_URL}/api/admin/files/${directory}`, {
                     method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${adminToken}`
-                    },
+                    headers: { 'Authorization': `Bearer ${adminToken}` },
                     body: formData
                 });
                 
                 if (response.ok) {
-                    refreshFiles(directory);
+                    await refreshFiles(directory);
                 } else {
-                    alert('Upload fehlgeschlagen');
+                    alert('Upload failed');
                 }
             } catch (error) {
-                console.error('Upload error:', error);
-                alert('Upload fehlgeschlagen');
+                alert('Upload failed');
             }
         }
 
-        // Drag and drop handlers
+        // Drag and Drop Handlers
         function handleDragOver(event) {
             event.preventDefault();
             event.currentTarget.classList.add('dragover');
@@ -950,13 +1068,11 @@
             }
         }
 
-        // Download backup
+        // Download Backup
         async function downloadBackup() {
             try {
                 const response = await fetch(`${API_URL}/api/admin/backup`, {
-                    headers: {
-                        'Authorization': `Bearer ${adminToken}`
-                    }
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
                 });
                 
                 if (response.ok) {
@@ -964,36 +1080,57 @@
                     const url = window.URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
-                    a.download = `rheinfallspinsel_backup_${new Date().toISOString().slice(0,10)}.zip`;
+                    a.download = `system_backup_${new Date().toISOString().slice(0,10)}.zip`;
                     document.body.appendChild(a);
                     a.click();
                     document.body.removeChild(a);
                     window.URL.revokeObjectURL(url);
                 } else {
-                    alert('Backup-Download fehlgeschlagen');
+                    alert('Backup download failed');
                 }
             } catch (error) {
-                console.error('Backup error:', error);
-                alert('Backup-Download fehlgeschlagen');
+                alert('Backup download failed');
             }
         }
 
-        // Logout
+        // Utility Functions
+        function showMessage(elementId, message) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            setTimeout(() => element.textContent = '', 3000);
+        }
+
         function logout() {
             adminToken = null;
+            currentPinPage = 0;
             document.getElementById('adminPanel').style.display = 'none';
             document.getElementById('loginForm').style.display = 'block';
             document.getElementById('adminPassword').value = '';
+            document.getElementById('loginError').textContent = '';
         }
 
         // Remove dragover class when leaving
         document.addEventListener('dragleave', (e) => {
             if (!e.currentTarget.contains(e.relatedTarget)) {
-                document.querySelectorAll('.upload-area').forEach(area => {
-                    area.classList.remove('dragover');
+                document.querySelectorAll('.upload-zone').forEach(zone => {
+                    zone.classList.remove('dragover');
                 });
             }
         });
+
+        // Make functions globally accessible
+        window.updateUser = updateUser;
+        window.deleteUser = deleteUser;
+        window.changePinPage = changePinPage;
+        window.deletePin = deletePin;
+        window.refreshFiles = refreshFiles;
+        window.downloadFile = downloadFile;
+        window.deleteFile = deleteFile;
+        window.uploadFile = uploadFile;
+        window.handleDragOver = handleDragOver;
+        window.handleDrop = handleDrop;
+        window.downloadBackup = downloadBackup;
+        window.logout = logout;
     </script>
 </body>
 </html>
